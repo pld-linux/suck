@@ -1,0 +1,406 @@
+diff -Nur suck-4.2.2.orig/Makefile.in suck-4.2.2/Makefile.in
+--- suck-4.2.2.orig/Makefile.in	Sun Jul 25 21:09:33 1999
++++ suck-4.2.2/Makefile.in	Tue Nov  2 10:19:14 1999
+@@ -6,8 +6,8 @@
+ ############################################################################
+ 
+ # Step 1: Define ONE of the CHKHISTORY 
+-CHKHISTORY=chkhistory.o		# use flat file history routine
+-#CHKHISTORY=chkhistory_db.o	# use DB history routine, if you use 
++#CHKHISTORY=chkhistory.o		# use flat file history routine
++CHKHISTORY=chkhistory_db.o	# use DB history routine, if you use 
+                                 # DBM, GDBM, NDBM, or DBZ
+                                 # in order to use DBZ with INN you will need
+                                 # the full compiled source code, especially
+@@ -20,7 +20,7 @@
+ #DB_TYPE=-DUSE_GDBM	
+ #DB_TYPE=-DUSE_NDBM
+ #DB_TYPE=-DUSE_DBZ	# for inn-1.X.X users
+-#DB_TYPE=-DUSE_INN2	# for inn-2.X.X users
++DB_TYPE=-DUSE_INN2	# for inn-2.X.X users
+ 
+ # Step 3: Define ONE Library that contains the functions
+ # If you are using INN-2.X, and the compiler complains 
+@@ -31,11 +31,11 @@
+ #DB_LIB=-lndbm
+ #DB_LIB=-ldbz
+ #DB_LIB=-linn -lstorage	# see note above
+-#DB_LIB=-linn		# INN puts DBZ code in here
++DB_LIB=-linn		# INN puts DBZ code in here
+ 
+ # Step 4: IF your DB Library/Includes are in a non-standard place, 
+ # define These
+-#DB_INC_LOC=-I/usr/src/inn-2.2/include
++DB_INC_LOC=-I/usr/include/inn
+ #DB_LIB_LOC=-L/usr/news/lib
+ 
+ # Step 5: If you want to use embedded PERL functions as kill routines
+@@ -52,15 +52,20 @@
+ #PERL_DEFS=-DPERL_EMBED -Dbool=char -DHAS_BOOL
+ #PERL_INC_LOC=-I$(PERL_CORE)
+ #PERL_LIB_LOC=-L$(PERL_CORE)
++PERL_CORE=$(PERL_CORE_PLD)
++PERL_LIB=-lperl -lcrypt -lm
++PERL_DEFS=-DPERL_EMBED -Dbool=char -DHAS_BOOL
++PERL_INC_LOC=-I$(PERL_CORE)
++PERL_LIB_LOC=-L$(PERL_CORE) -lpthread -lcrypt
+ 
+ ############################################################################
+ # COMPILE flags for GCC
+ ############################################################################
+-MY_GCC_FLAGS =  -Wall -Wpointer-arith -Wcast-align -Wcast-qual \
++MY_GCC_FLAGS =  -Wall -Wpointer-arith -Wcast-align \
+   -Wshadow  -Waggregate-return -Wmissing-prototypes -Wnested-externs \
+   -Wstrict-prototypes -Wwrite-strings -Wmissing-declarations
+ 
+-MY_DBZ_GCC_FLAGS =  -Wall -Wpointer-arith -Wcast-align -Wcast-qual \
++MY_DBZ_GCC_FLAGS =  -Wall -Wpointer-arith -Wcast-align \
+   -Waggregate-return -Wmissing-prototypes -Wnested-externs -Wwrite-strings \
+   -Wmissing-declarations
+ 
+@@ -100,7 +105,7 @@
+ CC = @CC@
+ @SET_MAKE@
+ 
+-CFLAGS = @CFLAGS@
++CFLAGS = @CFLAGS@ -DHAVE_STRING_H -DHAVE_MEMORY_H
+ CPPFLAGS = -I. -I$(srcdir) @CPPFLAGS@
+ LDFLAGS = @LDFLAGS@ 
+ DEFS = @DEFS@ -DSUCK_VERSION=\"$(VERSION)\"
+diff -Nur suck-4.2.2.orig/README.FIRST suck-4.2.2/README.FIRST
+--- suck-4.2.2.orig/README.FIRST	Thu Jan  1 01:00:00 1970
++++ suck-4.2.2/README.FIRST	Tue Nov  2 10:16:33 1999
+@@ -0,0 +1,25 @@
++Dear user,
++
++After installing the suck rpm you should browse the configuration
++files in /var/state/suck and change them to your needs. Check out the
++suck documentation and man pages for more help.
++
++Now you can execute (as user news) the script
++/var/state/suck/get.news.inn or /var/state/suck/get.news.generic
++to suck news from your favourite NNTP server.
++
++If you are using INN (this suck is configured to be used with INN!)
++don't forget to setup an entry in /etc/news/newsfeeds if you also want
++to be able to POST news! Use something similar to this:
++
++--------------------------------------------------------------------------
++yournewsfeed/news.yournewsfeed.de:\
++::
++--------------------------------------------------------------------------
++
++Try "man newsfeeds" for more information about INN's newsfeeds
++configuration file.
++
++Bye,
++    Karsten Weiss <karsten@addx.au.s.shuttle.de>
++
+diff -Nur suck-4.2.2.orig/killprg.c suck-4.2.2/killprg.c
+--- suck-4.2.2.orig/killprg.c	Tue May 11 16:36:36 1999
++++ suck-4.2.2/killprg.c	Tue Nov  2 10:16:01 1999
+@@ -395,9 +395,12 @@
+ }
+ /*--------------------------------------------------------------------------*/
+ void killperl_done(PKillStruct master) {
+-        perl_destruct(master->perl_int);
+-        perl_free(master->perl_int);
+-        master->perl_int = NULL;
++	if (master->perl_int != NULL)
++	{
++	        perl_destruct(master->perl_int);
++	        perl_free(master->perl_int);
++	        master->perl_int = NULL;
++	}
+ 	master->killfunc=chk_msg_kill; /* restore default function */
+ }
+ /*----------------------------------------------------------------------------*/
+diff -Nur suck-4.2.2.orig/sample/get.news.generic suck-4.2.2/sample/get.news.generic
+--- suck-4.2.2.orig/sample/get.news.generic	Sat Feb 20 00:32:57 1999
++++ suck-4.2.2/sample/get.news.generic	Tue Nov  2 10:24:44 1999
+@@ -5,20 +5,19 @@
+ #NOTE: this script probably needs to be run by root.  Most systems will
+ # not let a normal user run rnews
+ 
+-
+-REMOTE_HOST=news.pixi.com
++REMOTE_HOST=news.icm.edu.pl
+ LOCAL_HOST=localhost
+ 
+-SPOOLDIR=/usr/spool/news		# base directory for articles to be rposted
+-NEWSDIR=/usr/lib/news			# base directory for news binaries 
+-BASEDIR=/home/boby/doNews		# base directory for suck rpost and scripts
++SPOOLDIR=/var/spool/news		# base directory for articles to be rposted
++NEWSDIR=/usr				# base directory for news binaries 
++BASEDIR=/var/state/suck			# base directory for suck rpost and scripts
+ 
+ SHLOCK=${NEWSDIR}/bin/shlock
+ 
+ TMPDIR=${BASEDIR}			# location for suck.* files
+ MSGDIR=${BASEDIR}/Msgs			# where to put MultiFile articles when getting them
+ 
+-OUTGOING=${SPOOLDIR}/out.going/pixi	# location of the list of articles to upload
++OUTGOING=${SPOOLDIR}/out.going/${REMOTE_HOST}	# location of the list of articles to upload
+ SCRIPT=${BASEDIR}/put.news		# my filter for rpost
+ OUTFILE=/tmp/tmp$$			# used by rpost as article after it is filtered
+ LOCKFILE=${BASEDIR}/getnews.lock	# lock file to prevent multiple instances of script
+diff -Nur suck-4.2.2.orig/sample/get.news.inn suck-4.2.2/sample/get.news.inn
+--- suck-4.2.2.orig/sample/get.news.inn	Sat Sep 27 09:29:59 1997
++++ suck-4.2.2/sample/get.news.inn	Tue Nov  2 10:24:39 1999
+@@ -5,12 +5,13 @@
+ #NOTE: this script probably needs to be run by root.  Most systems will
+ # not let a normal user run ctlinnd 
+ 
+-REMOTE_HOST=news.pixi.com
++REMOTE_HOST=news.icm.edu.pl
++SITE=news.icm.edu.pl			# name of site from newsfeeds file
+ LOCAL_HOST=localhost
+ 
+-SPOOLDIR=/usr/spool/news		# base directory for articles to be rposted
+-NEWSDIR=/usr/lib/news			# base directory for news binaries 
+-BASEDIR=/home/boby/doNews		# base directory for scripts and data files
++SPOOLDIR=/var/spool/news		# base directory for articles to be rposted
++NEWSDIR=/usr				# base directory for news binaries 
++BASEDIR=/var/state/suck			# base directory for scripts and data files
+ 
+ CTLINND=${NEWSDIR}/bin/ctlinnd		# location of binary
+ SHLOCK=${NEWSDIR}/bin/shlock		# location of binary
+@@ -18,8 +19,6 @@
+ TMPDIR=${BASEDIR}			# location for suck.* files
+ MSGDIR=${BASEDIR}/Msgs			# where to put MultiFile messages when getting them
+ 
+-SITE=pixi				# name of site from newsfeeds file
+-
+ OUTGOING=${SPOOLDIR}/out.going/${SITE}	# location of the list of articles to upload
+ OUTGOINGNEW=${OUTGOING}.new		# file to contain the list temporarily
+ OUTGOINGFAIL=${OUTGOINGNEW}.fail	# file with failed xfers
+@@ -50,73 +49,79 @@
+ REMOTE_RESULT=$?
+ 
+ if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
+-	
+-	# download messages
+-	${SUCK} ${REMOTE_HOST} -c -A -bp -hl ${LOCAL_HOST} -dt ${TMPDIR} -dm ${MSGDIR} -dd ${BASEDIR}
+-	SUCK_STATUS=$?
+-
+-	if [ ${SUCK_STATUS} -eq 0 ]; then
+-		echo "Downloaded Articles"
+-	elif [ ${SUCK_STATUS} -eq 1 ]; then
+-		echo "No articles to download"
+-	elif [ ${SUCK_STATUS} -eq 2 ]; then
+-		echo "Unexpected answer from remote server to an issued command"
+-	elif [ ${SUCK_STATUS} -eq 4 ]; then
+-		echo "Can't do NNTP authorization"
+-	elif [ ${SUCK_STATUS} -eq -1 ]; then
+-		echo "General failure"
+-	fi
+-
+-	# now upload messages
+-	if [ -s ${OUTGOING}  -o -s ${OUTGOINGNEW} ]; then
+-
+-		${TESTHOST} ${REMOTE_HOST} -s
+-
+-		if [ $? -ne 0 ]; then
+-			echo "Remote posting host not responding"
+-		else
+-			# this is needed by INND so that the outgoing file will be
+-			# properly flushed and we have a new blank file to work with
+-			# when we are done
+-			# First mv the current one to a new file name
+-			# Since innd already has the file open, it doesn't care 
+-			# about the rename.
+-			# The flush will ensure that all messages to be posted have
+-			# been written out, close off the old one (already renamed)
+-			# and create a new one.
+-
+-			# if the outgoingnew already exists, it means we aborted last time
+-			# so don't try to do it again
+-			if [ ! -s ${OUTGOINGNEW} ]; then
+-				mv ${OUTGOING} ${OUTGOINGNEW}
+-				${CTLINND} flush ${SITE}
+-			fi
+ 
+-			# outgoing messages to post
+-			${RPOST} ${REMOTE_HOST} -d -b ${OUTGOINGNEW} -p ${SPOOLDIR} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
+-
+-			ERRLEV=$?
+-			if [ ${ERRLEV} -eq 0 ]; then
+-				echo "Remotely posted articles"
+-				rm ${OUTFILE}
+-			elif [ ${ERRLEV} -eq 1 ]; then
+-				echo "Error posting a message"
+-			elif [ ${ERRLEV} -eq 2 ]; then
+-				echo "Unable to do NNTP authorization with remote server"
+-			elif [ ${ERRLEV} -eq 3 ]; then
+-				echo "Unexpected answer from remote server to a command while doing NNTP authorization"
+-			elif [ ${ERRLEV} -eq -1 ]; then
+-				echo "Fatal error"
+-			fi
++	{
++		# download messages
++		${SUCK} ${REMOTE_HOST} -c -bp -hl ${LOCAL_HOST} -dt ${TMPDIR} -dm ${MSGDIR} -dd ${BASEDIR}
++		SUCK_STATUS=$?
++
++		if [ ${SUCK_STATUS} -eq 0 ]; then
++			echo "Downloaded Articles"
++		elif [ ${SUCK_STATUS} -eq 1 ]; then
++			echo "No articles to download"
++		elif [ ${SUCK_STATUS} -eq 2 ]; then
++			echo "Unexpected answer from remote server to an issued command"
++		elif [ ${SUCK_STATUS} -eq 4 ]; then
++			echo "Can't do NNTP authorization"
++		elif [ ${SUCK_STATUS} -eq -1 ]; then
++			echo "General failure"
++		fi
++	} &
+ 
+-			if [ -f ${OUTGOINGFAIL} ]; then
+-				mv ${OUTGOINGFAIL} ${OUTGOINGNEW}	# so we can re do it
+-				chown news.${NEWSGROUP} ${OUTGOINGNEW}
+-				chmod 664 ${OUTGOINGNEW}
++	{
++		# upload messages
++		if [ -s ${OUTGOING}  -o -s ${OUTGOINGNEW} ]; then
++
++			${TESTHOST} ${REMOTE_HOST} -s
++
++			if [ $? -ne 0 ]; then
++				echo "Remote posting host not responding"
++			else
++				# this is needed by INND so that the outgoing file will be
++				# properly flushed and we have a new blank file to work with
++				# when we are done
++				# First mv the current one to a new file name
++				# Since innd already has the file open, it doesn't care 
++				# about the rename.
++				# The flush will ensure that all messages to be posted have
++				# been written out, close off the old one (already renamed)
++				# and create a new one.
++
++				# if the outgoingnew already exists, it means we aborted last time
++				# so don't try to do it again
++				if [ ! -s ${OUTGOINGNEW} ]; then
++					mv ${OUTGOING} ${OUTGOINGNEW}
++					${CTLINND} flush ${SITE}
++				fi
++
++				# outgoing messages to post
++				${RPOST} ${REMOTE_HOST} -d -b ${OUTGOINGNEW} -p ${SPOOLDIR} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
++
++				ERRLEV=$?
++				if [ ${ERRLEV} -eq 0 ]; then
++					echo "Remotely posted articles"
++					rm ${OUTFILE}
++				elif [ ${ERRLEV} -eq 1 ]; then
++					echo "Error posting a message"
++				elif [ ${ERRLEV} -eq 2 ]; then
++					echo "Unable to do NNTP authorization with remote server"
++				elif [ ${ERRLEV} -eq 3 ]; then
++					echo "Unexpected answer from remote server to a command while doing NNTP authorization"
++				elif [ ${ERRLEV} -eq -1 ]; then
++					echo "Fatal error"
++				fi
++
++				if [ -f ${OUTGOINGFAIL} ]; then
++					mv ${OUTGOINGFAIL} ${OUTGOINGNEW}	# so we can re do it
++					chown news.${NEWSGROUP} ${OUTGOINGNEW}
++					chmod 664 ${OUTGOINGNEW}
++				fi
+ 			fi
+ 		fi
+-	fi	
+-	
++	} &
++
++	wait
++
+ 	echo "You can hang up the modem now"
+ 
+ fi
+diff -Nur suck-4.2.2.orig/sample/put.news suck-4.2.2/sample/put.news
+--- suck-4.2.2.orig/sample/put.news	Sun Oct  4 21:32:26 1998
++++ suck-4.2.2/sample/put.news	Tue Nov  2 10:16:26 1999
+@@ -1,34 +1,10 @@
+ #!/bin/sh
+ 
+-# this is just a simple script to use sed to strip off the 
+-# NNTP_Posting_Host and Xref headers that my ISP's newsfeed 
+-# doesn't like.  this could be written as a one liner
+-# sed -e SEDCMD1 $1 | sed SEDCMD2 > $2
+-
+-#set -x
+-
+-if [ $# -ne 2 ]; then
+-	echo
+-	echo "Usage `basename $0` infile outfile <RETURN>"
+-	echo
+-	exit -1
+-fi
+-
+-SEDCMD="/^NNTP-Posting-Host/d"
+-SEDCMD2="/^Xref/d"
+-OUTFILE=$2
+-INFILE=$1
+-
+-if [ -f ${INFILE} ]; then
+-
+-	sed -e ${SEDCMD} ${INFILE} | sed -e ${SEDCMD2} > ${OUTFILE}
+-		
+-	if [ $? -ne 0 ]; then
+-		echo "Error"
+-		exit -1
+-	fi
+-
+-else
+-	echo "$1 does not exist"
+-	exit -1
+-fi
++# this is just a simple script to use awk to strip off the
++# NNTP-Posting-Host and Xref headers that my ISP's newsfeed
++# doesn't like.
++
++awk '
++	/^$/ {body = 1}
++	body || !/^(NNTP-Posting-Host|Xref):/
++' $1 >$2
+diff -Nur suck-4.2.2.orig/suck_config.h suck-4.2.2/suck_config.h
+--- suck-4.2.2.orig/suck_config.h	Sat May 15 23:26:59 1999
++++ suck-4.2.2/suck_config.h	Tue Nov  2 10:15:28 1999
+@@ -66,7 +66,7 @@
+ 
+ /* FULL PATH of error log used if -e option specifed to any of the programs */
+ /* can be overridden at the command line with -E option */
+-#define ERROR_LOG "./suck.errlog"
++#define ERROR_LOG "/var/log/suck.errlog"
+ 
+ /* FULL PATH of status messages log if -s option specified to any of the programs */
+ /* can be overridden at the command line with -S option */
+@@ -91,8 +91,8 @@
+ #define N_LMOVE_CONFIG  "lmove-config"          /* config file for lmove */
+ #define N_XOVER         "suckxover"             /* parameter file for which articles NOT to download via xover */
+ 
+-#define N_PHRASES "/usr/local/lib/suck.phrases"	/* default location for phrase file */
+-#define HISTORY_FILE "/usr/news/db/history"     /* default location for history file */
++#define N_PHRASES "/var/state/suck/suck.phrases"	/* default location for phrase file */
++#define HISTORY_FILE "/var/state/news/history"   /* default location for history file */
+ 
+ /* TEMP FILES created */
+ #define N_NEWRC "suck.newrc"
+@@ -107,7 +107,7 @@
+ #define N_OLD_OLDRC    "sucknewsrc.old"
+ 
+ /* Various DIRECTORY PATHS, these can be overriden from command line */
+-#define N_TMPDIR "."		/* location of Temp Files */
++#define N_TMPDIR "/tmp"		/* location of Temp Files */
+ #define N_DATADIR "."		/* location of Data Files */
+ #define N_MSGDIR "./Msgs"	/*location of articles produced by suck, if multifile option selected */
+ 
+@@ -124,7 +124,7 @@
+ #define RPOST_FAIL_EXT ".fail"
+ 
+ /* RNEWS program called by lpost */
+-#define RNEWS "/usr/lib/news/rnews"
++#define RNEWS "/usr/bin/rnews"
+ 
+ /* character used as a comment in sucknewsrc */
+ #define SUCKNEWSRC_COMMENT_CHAR '#'
