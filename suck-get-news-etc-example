@@ -16,3 +16,4 @@ VIA_USER=adasir			# username/account you are using here (to store
 USE_MODEREADER="-M"	# some (most) sites will require a 'mode reader' before
 			# reading/posting
 BASEDIR=/var/lib/suck/mimuw
+READ_ONLY=no
