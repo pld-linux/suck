@@ -3,12 +3,14 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.3.2
-Release:	2
+Release:	3
 License:	Public Domain
 Group:		Networking/News
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
 # Source0-md5:	b4de28e7f256ec3c2c388b2c984f30bf
 Source1:	%{name}.logrotate
+Source2:	%{name}-get-news.sh
+Source3:	%{name}-get-news-etc-example
 Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 Patch2:		%{name}-perl-5.6.patch
@@ -68,7 +70,7 @@ EOF
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_localstatedir},/etc/logrotate.d} \
+install -d $RPM_BUILD_ROOT{%{_localstatedir},/etc/{logrotate.d,news/suck}} \
 	$RPM_BUILD_ROOT/var/log
 
 %{__make} installall \
@@ -84,6 +86,9 @@ install sample/put.news \
 ln -s %{_localstatedir}/get.news.inn $RPM_BUILD_ROOT%{_bindir}/
 install sample/sucknewsrc.sample \
 	$RPM_BUILD_ROOT%{_localstatedir}/sucknewsrc
+
+install %{SOURCE2} $RPM_BUILD_ROOT%{_bindir}
+install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/news/suck/news.mimuw.edu.pl-example
 
 touch $RPM_BUILD_ROOT/var/log/suck.errlog
 touch $RPM_BUILD_ROOT%{_localstatedir}/suck.killlog
@@ -117,6 +122,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(750,root,root) %config(noreplace) %{_localstatedir}/*.pl
 %attr(640,root,root) %config(noreplace) %{_localstatedir}/sucknewsrc
 %attr(640,root,root) %config(noreplace) %{_localstatedir}/active-ignore
+%attr(640,root,root) %config(noreplace) %{_sysconfdir}/news/suck/*
 %{_mandir}/man1/*
 
 %attr(640,root,root) %ghost %{_localstatedir}/suck.killlog*
