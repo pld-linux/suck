@@ -54,7 +54,7 @@ PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
 export PERL_CORE_PLD
 
 CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" \
-./configure %{_target} \
+./configure %{_target_platform} \
 	--prefix=$RPM_BUILD_ROOT%{_prefix} \
 	--mandir=$RPM_BUILD_ROOT%{_mandir}
 make
