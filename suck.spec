@@ -57,7 +57,7 @@ LDFLAGS="-s"
 export PERL_CORE_PLD PERL_LIB_PLD CFLAGS LDFLAGS
 %configure
 
-make
+%{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
