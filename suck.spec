@@ -17,6 +17,8 @@ Patch2:		%{name}-perl-5.6.patch
 URL:		http://home.att.net/~bobyetman/
 BuildRequires:	perl-devel >= 5.6.1
 BuildRequires:	inn-devel >= 2.0
+BuildRequires:	autoconf
+BuildRequires:	automake
 Requires:	inn-libs >= 2.0
 Provides:	news-sucker
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
