@@ -413,9 +413,9 @@ diff -Nur suck-4.2.5.orig/suck_config.h suck-4.2.5/suck_config.h
  
  /* character used as a comment in sucknewsrc */
  #define SUCKNEWSRC_COMMENT_CHAR '#'
---- suck-4.3.1/configure.in.orig	Fri Sep 13 22:58:13 2002
-+++ suck-4.3.1/configure.in	Sun Jan  5 12:53:13 2003
-@@ -17,11 +17,11 @@
+--- suck-4.3.2/configure.in.orig	Sun Mar 23 19:11:07 2003
++++ suck-4.3.2/configure.in	Sat Mar 29 14:53:29 2003
+@@ -18,11 +18,11 @@
  AC_SUBST(GCC)
  
  dnl Checks for libraries.
@@ -427,61 +427,6 @@ diff -Nur suck-4.2.5.orig/suck_config.h suck-4.2.5/suck_config.h
  AC_CHECK_LIB(socks5, SOCKSconnect)
 -AC_CHECK_LIB(cV, fprintf)
 +AC_SEARCH_LIBS(fprintf, cV)
- AC_CHECK_LIB(ssl, SSL_get_error, [SSL_LIB="-lssl -lcrypto"; SSL_DEFS="-DHAVE_LIBSSL"])
+ dnl Do I need -lcrypto????? for SSL
+ AC_CHECK_LIB(ssl, SSL_get_error, [SSL_LIB="-lssl"; SSL_DEFS="-DHAVE_LIBSSL"])
  
- dnl Checks for header files.
-@@ -79,25 +79,48 @@
- AC_CHECK_PROG(PERL, perl, true, false)
- if test "$PERL" = "true"; then
-   found="no"
--  AC_MSG_CHECKING([for libperl.a])
--  for path in `perl -e 'foreach $i (@INC) { printf("%s ", $i) }'`; do
--    if test -f $path/libperl.a; then
-+  AC_MSG_CHECKING([for libperl])
-+  for path in /usr/lib `perl -e 'foreach $i (@INC) { printf("%s ", $i) }'`; do
-+    if test -f $path/libperl.a -o -f $path/libperl.so ; then
-       AC_MSG_RESULT($path)
-       found="yes"
-       break
-     fi
-     path="${path}/CORE"
--    if test -f $path/libperl.a; then
-+    if test -f $path/libperl.a -o -f $path/libperl.so ; then
-       AC_MSG_RESULT($path)
-       found="yes"
-       break
-     fi
-   done
--  if test "$found" = "yes"; then
-+  foundi="no"
-+  AC_MSG_CHECKING([for perl.h])
-+  for pathi in /usr/include `perl -e 'foreach $i (@INC) { printf("%s ", $i) }'`; do
-+    if test -f $pathi/perl.h -a -f $pathi/EXTERN.h ; then
-+      AC_MSG_RESULT($pathi)
-+      foundi="yes"
-+      break
-+    fi
-+    pathi="${pathi}/CORE"
-+    if test -f $pathi/perl.h -a -f $pathi/EXTERN.h ; then
-+      AC_MSG_RESULT($pathi)
-+      foundi="yes"
-+      break
-+    fi
-+  done
-+  if test "$found" = "yes" -a "$foundi" = "yes"; then
-     PERL_DEFS="-DPERL_EMBED -Dbool=char -DHAS_BOOL"
-     PERL_LIB="-lperl"
-+    if test "$path" = "/usr/lib"; then
-+	    PERL_LIB_LOC=
-+    else
-     PERL_LIB_LOC="-L$path"
--    PERL_INC_LOC="-I$path"
-+    fi
-+    if test "$pathi" = "/usr/include"; then
-+	    PERL_INC_LOC=
-+    else
-+    PERL_INC_LOC="-I$pathi"
-+    fi
-     AC_CHECK_LIB(m, cos, [PERL_LIB="$PERL_LIB -lm"])
-     AC_CHECK_LIB(crypt, crypt, [PERL_LIB="$PERL_LIB -lcrypt"]) 
-   else
