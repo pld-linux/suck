@@ -6,14 +6,15 @@ Version:	4.2.4
 Release:	2
 LIcense:	Public Domain
 Group:		Networking/News
+Group(de):	Netzwerkwesen/News
 Group(pl):	Sieciowe/News
 Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
 Source1:	%{name}.logrotate
 Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 Patch2:		%{name}-perl-5.6.patch
-URL:		http://home.att.net/~bobyetman/index.html
-BuildRequires:	perl
+URL:		http://home.att.net/~bobyetman/
+BuildRequires:	perl >= 5.6
 BuildRequires:	inn-devel >= 2.0
 Requires:	inn-libs >= 2.0
 Requires:	%{perl_archlib}
@@ -52,9 +53,7 @@ zainstalowaniu tego pakietu!
 %build
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
 PERL_LIB_PLD="`perl -MExtUtils::Embed -e ldopts | tail -1`"
-CFLAGS="$RPM_OPT_FLAGS"
-LDFLAGS="-s"
-export PERL_CORE_PLD PERL_LIB_PLD CFLAGS LDFLAGS
+export PERL_CORE_PLD PERL_LIB_PLD
 %configure
 
 # workaround for stupid inn 2.3 headers
@@ -81,8 +80,8 @@ install sample/sucknewsrc.sample \
 
 # default to put.news.sm (required for inn 2.3)
 for f in get.news.inn get.news.generic ; do
-  sed 's/^\(SCRIPT.*\)put\.news/\1put.news.sm/' \
-    < sample/$f > $RPM_BUILD_ROOT%{_localstatedir}/$f
+	sed 's/^\(SCRIPT.*\)put\.news/\1put.news.sm/' \
+		< sample/$f > $RPM_BUILD_ROOT%{_localstatedir}/$f
 done
 
 touch $RPM_BUILD_ROOT/var/log/suck.errlog
@@ -95,8 +94,7 @@ to
 test
 EOF
 
-gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/* \
-	CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST \
+gzip -9nfCHANGELOG CONTENTS README README.Gui README.Xover README.FIRST \
 	perl/README
 
 %clean
@@ -104,23 +102,19 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc {CHANGELOG,CONTENTS,README,README.Gui,README.Xover,README.FIRST}.gz
-%doc sample perl
-
+%doc *.gz sample perl
 %attr(755,root,root) %{_bindir}/*
 
 %config %{_sysconfdir}/logrotate.d/suck
-
-%attr(755,root,root) %dir %{_localstatedir}
-%config %attr(750,root,root) %{_localstatedir}/get.news.inn
-%config %attr(750,root,root) %{_localstatedir}/get.news.generic
-%config %attr(750,root,root) %{_localstatedir}/put.news
-%config %attr(750,root,root) %{_localstatedir}/put.news.sm
-%config %attr(750,root,root) %{_localstatedir}/*.pl
-%config %attr(640,root,root) %{_localstatedir}/sucknewsrc
-%config %attr(640,root,root) %{_localstatedir}/active-ignore
+%dir %{_localstatedir}
+%attr(750,root,root) %config(noreplace) %{_localstatedir}/get.news.inn
+%attr(750,root,root) %config(noreplace) %{_localstatedir}/get.news.generic
+%attr(750,root,root) %config(noreplace) %{_localstatedir}/put.news
+%attr(750,root,root) %config(noreplace) %{_localstatedir}/put.news.sm
+%attr(750,root,root) %config(noreplace) %{_localstatedir}/*.pl
+%attr(640,root,root) %config(noreplace) %{_localstatedir}/sucknewsrc
+%attr(640,root,root) %config(noreplace) %{_localstatedir}/active-ignore
+%{_mandir}/man1/*
 
 %attr(640,root,root) %ghost %{_localstatedir}/suck.killlog*
 %attr(640,root,root) %ghost /var/log/*
-
-%{_mandir}/man1/*
