@@ -76,7 +76,7 @@ install sample/get.news.inn \
 install sample/sucknewsrc.sample \
 	$RPM_BUILD_ROOT/var/state/suck/sucknewsrc
 
-gzip -9nf $RPM_BUILD_ROOT/usr/share/man/man1/* \
+gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/* \
 	CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST \
 	perl/README
 
@@ -125,7 +125,7 @@ rm -rf $RPM_BUILD_ROOT
 %config %attr(740,news,news) /var/state/suck/*.pl
 %config %attr(644,news,news) /var/state/suck/sucknewsrc
 
-/usr/share/man/man1/*
+%{_mandir}/man1/*
 
 %changelog
 * Thu May 13 1999 Piotr Czerwiñski <pius@pld.org.pl>
