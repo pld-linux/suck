@@ -3,7 +3,7 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.3.2
-Release:	1
+Release:	2
 License:	Public Domain
 Group:		Networking/News
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
@@ -80,6 +80,8 @@ install sample/put.news \
 	sample/get.news.* \
 	sample/*.pl \
 	$RPM_BUILD_ROOT%{_localstatedir}
+
+ln -s %{_localstatedir}/get.news.inn $RPM_BUILD_ROOT%{_bindir}/
 install sample/sucknewsrc.sample \
 	$RPM_BUILD_ROOT%{_localstatedir}/sucknewsrc
 
