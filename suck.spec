@@ -2,7 +2,7 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.2.0
-Release:	1
+Release:	2
 Copyright:	Public Domain
 Group:		Networking/News
 Group(pl):	Sieciowe/News
@@ -17,7 +17,6 @@ Provides:	news-sucker
 Requires:	inn >= 2.0
 Requires:	gawk
 %requires_eq    perl
-BuildPrereq:	autoconf >= 2.13-8
 BuildPrereq:	perl
 BuildPrereq:	inn-devel >= 2.0
 URL:		http://home.att.net/~bobyetman/index.html
@@ -53,18 +52,17 @@ tego pakietu!
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
 export PERL_CORE_PLD
 
-autoconf
 CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" \
 ./configure %{_target} \
-	--prefix=$RPM_BUILD_ROOT/usr
-
+	--prefix=$RPM_BUILD_ROOT%{_prefix} \
+	--mandir=$RPM_BUILD_ROOT%{_mandir}
 make
 
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/{etc/logrotate.d,var/state/suck}
 
-make installall prefix=$RPM_BUILD_ROOT/usr
+make installall prefix=$RPM_BUILD_ROOT%{_prefix}
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/suck
 install sample/get.news.inn \
@@ -128,127 +126,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/*
 
 %changelog
-* Thu May 13 1999 Piotr Czerwiñski <pius@pld.org.pl>
-  [4.2.0-1]
-- updated to 4.2.0,
-- added suck-readme.patch,
-- removed suck-makefile.patch,
-- package is now FHS 2.0 compliant.
-
-* Mon Apr 19 1999 Piotr Czerwiñski <pius@pld.org.pl>
-  [4.1.2-2]
-- recompiled on new rpm.
-
-* Thu Apr 15 1999 Piotr Czerwiñski <pius@pld.org.pl>
-  [4.1.2-1]
-- updated to 4.1.2,
-- added Group(pl),
-- changed Buildroot to /tmp/%{name}-%{version}-root,
-- removed man group from man pages,
-- patches rewritten for new version,
-- added detection of PERL_CORE directory,
-- many changes in %build, %install and %files,
-- added gzipping documentation,
-- added Requires: inn >= 2.0,
-- added some %requires_pkg macros,
-- added new README.FIRST file,
-- cosmetics.
-
-* Sat Nov 28 1998 Marcin 'Qrczak' Kowalczyk <qrczak@knm.org.pl>
-  [3.10.2-1]
-- PERL_CORE path changed to /usr/lib/perl5/5.00502/i386-linux-thread/CORE,
-- -lpthread added to PERL_LIB,
-- suck-perl_int.patch fixes a bug,
-- /usr/lib/suck moved into /var/lib/suck,
-- added pl translation,
-- `mkdir -p' replaced with more standard `install -d',
-- suck-scripts.patch fixes a bug in put.news and makes get.news.innxmit,
-  downloading and uploading simultaneously,
-- added full %attr description in %files,
-- added %setup -q parameter,
-- don't install sample/suckkillfile.sample as /var/lib/suck/suckkillfile.
-
-* Wed Oct 15 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.10.1
-
-* Wed Oct 7 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- compiled in Perl filter support
-
-* Mon Oct 5 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.10.0
-
-* Mon Jul 27 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.9.4
-- Now requires inn < 2.0
-
-* Sat May 23 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.9.4A
-
-* Fri Apr 24 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.9.3
-
-* Mon Mar 30 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.9.2
-- Removed reference to README.killfiles (it's gone - a mistake?)
-
-* Wed Mar 4 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.9.2D
-
-* Mon Mar 2 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.9.2C
-
-* Sun Feb 22 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.9.2B
-- Split patch into make, script and config patches to ease upgrading
-
-* Sun Feb 15 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Moved the package back to /usr from /usr/local
-
-* Fri Feb 13 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.9.1
-
-* Fri Feb 6 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.9.0
-- Removed '-D_POSIX_SOURCE -D_BSD_SOURCE' from CFLAGS (no longer required)
-- Changed 'nocompress' parameter for logrotate to 'delaycompress'
-- Virtual package provision changed to 'news-puller'
-- Post-uninstall script will now only run on package erasure (not upgrade)
-
-* Thu Jan 15 1998  Ian Macdonald <ianmacd@xs4all.nl>
-- Upgraded to 3.8.0
-- Changed root for binaries from /usr to /usr/local
-- Changed paths in sample scripts to be Red Hat INN compliant
-- Added package dependencies
-- Added missing doc file README.killfiles
-- Changed dir for temp files to /tmp
-- Changed dir for suck.errlog to /var/log
-- Extended logrotate script to cover suck.killlog
-- Removed lpost man page (obsolete)
-
-* Mon Sep 15 1997  Jani Hakala <jahakala@cc.jyu.fi>
-- Upgraded to v3.6.0
-
-* Sun Sep 7 1997  Jani Hakala <jahakala@cc.jyu.fi>
-- Built against glibc
-- Added '-D_POSIX_SOURCE -D_BSD_SOURCE' to CFLAGS because of glibc.
-- Can be built as ordinary user.
-
-* Mon Sep 1 1997 Karsten Weiss <karsten@addx.au.s.shuttle.de>
-- Ugraded package to suck-3.5.2.
-
-* Fri Jun 20 1997 Karsten Weiss <karsten@addx.au.s.shuttle.de>
-- Ugraded package to suck-3.5.1.
-
-* Sat Jun 7 1997 Karsten Weiss <karsten@addx.au.s.shuttle.de>
-- Decided to install the sample config files by default as this is
-  no problem anymore thanks to Builroot.
-- Forgot to kill the .orig files... Fixed!
-- Fixed a mistake in the path of the description text below.
-
-* Fri Jun 6 1997 Karsten Weiss <karsten@addx.au.s.shuttle.de>
-- Buildrooted.
-- logrotate support
-- Included README.FIRST text.
-
-* Wed Jun 4 1997 Karsten Weiss <karsten@addx.au.s.shuttle.de>
-- Created this spec file.
+* Mon May 24 1999 Piotr Czerwiñski <pius@pld.org.pl> 
+  [4.2.0-2]
+- package is FHS 2.0 compliant,
+- based on spec file written by Ian Macdonald <ianmacd@xs4all.nl>, rewritten 
+  for PLD use by me and Marcin 'Qrczak' Kowalczyk <qrczak@knm.org.pl>.
