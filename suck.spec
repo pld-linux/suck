@@ -3,7 +3,7 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.2.4
-Release:	1
+Release:	2
 LIcense:	Public Domain
 Group:		Networking/News
 Group(pl):	Sieciowe/News
@@ -11,6 +11,7 @@ Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
 Source1:	%{name}.logrotate
 Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
+Patch2:		%{name}-perl-5.6.patch
 URL:		http://home.att.net/~bobyetman/index.html
 BuildRequires:	perl
 BuildRequires:	inn-devel >= 2.0
@@ -46,6 +47,7 @@ zainstalowaniu tego pakietu!
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 %build
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
@@ -54,6 +56,11 @@ CFLAGS="$RPM_OPT_FLAGS"
 LDFLAGS="-s"
 export PERL_CORE_PLD PERL_LIB_PLD CFLAGS LDFLAGS
 %configure
+
+# workaround for stupid inn 2.3 headers
+echo -e '#define HAVE_STRDUP\n#define HAVE_STRSPN' >> config.h
+echo -e '#define BOOL int\n#define OFFSET_T off_t' >> config.h
+echo '#define DO_TAGGED_HASH 1' >> config.h
 
 %{__make}
 
@@ -65,14 +72,18 @@ install -d $RPM_BUILD_ROOT{%{_localstatedir},%{_sysconfdir}/logrotate.d} \
 %{__make} installall DESTDIR=$RPM_BUILD_ROOT
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
-install sample/get.news.inn \
-	sample/get.news.generic \
-	sample/put.news \
+install sample/put.news \
 	sample/put.news.sm \
 	sample/*.pl \
 	$RPM_BUILD_ROOT%{_localstatedir}
 install sample/sucknewsrc.sample \
 	$RPM_BUILD_ROOT%{_localstatedir}/sucknewsrc
+
+# default to put.news.sm (required for inn 2.3)
+for f in get.news.inn get.news.generic ; do
+  sed 's/^\(SCRIPT.*\)put\.news/\1put.news.sm/' \
+    < sample/$f > $RPM_BUILD_ROOT%{_localstatedir}/$f
+done
 
 touch $RPM_BUILD_ROOT/var/log/suck.errlog
 touch $RPM_BUILD_ROOT%{_localstatedir}/suck.killlog
