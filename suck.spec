@@ -8,15 +8,16 @@ Group:		Networking/News
 Group(pl):	Sieciowe/News
 Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
 Source1:	suck.log
-Source2:	suck-README.FIRST.tar.gz
+Source2:	suck-README.FIRST.gz
 Patch0:		suck-makefile.patch
 Patch1:		suck-script.patch
 Patch2:		suck-config.patch
-#Patch3:	suck-perl_int.patch
+Patch3:		suck-perl_int.patch
+Patch4:		suck-scripts.patch
 Provides:	news-sucker
 Requires:	inn >= 2.0
-%requires_pkg   perl
-%requires_pkg   gawk
+%requires_pkg	perl
+%requires_pkg	gawk
 URL:		http://home.att.net/~bobyetman/index.html
 BuildRoot:	/tmp/%{name}-%{version}-root
 
@@ -40,10 +41,12 @@ tego pakietu!
 
 %prep
 %setup -q
-cp $RPM_SOURCE_DIR/suck-README.FIRST README.FIRST
+cp %{SOURCE2} README.FIRST.gz
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
 
 %build
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
@@ -63,14 +66,15 @@ make install prefix=$RPM_BUILD_ROOT/usr
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/suck
 install sample/get.news.inn \
-        sample/get.news.generic \
-        sample/put.news \
+	sample/get.news.generic \
+	sample/put.news \
 	sample/put.news.sm \
 	$RPM_BUILD_ROOT/var/lib/suck
-install sample/sucknewsrc.sample $RPM_BUILD_ROOT/var/lib/suck/sucknewsrc
+install sample/sucknewsrc.sample \
+	$RPM_BUILD_ROOT/var/lib/suck/sucknewsrc
 
 gzip -9nf $RPM_BUILD_ROOT/usr/man/man1/* \
-	CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST
+	CHANGELOG CONTENTS README README.Gui README.Xover
 
 %post 
 if [ "$1" = 1 ]; then
@@ -109,6 +113,7 @@ rm -rf $RPM_BUILD_ROOT
 %config /etc/logrotate.d/suck
 
 %attr(775,news,news) %dir /var/lib/suck
+
 %config %attr(740,news,news) /var/lib/suck/get.news.inn
 %config %attr(740,news,news) /var/lib/suck/get.news.generic
 %config %attr(740,news,news) /var/lib/suck/put.news
@@ -130,6 +135,7 @@ rm -rf $RPM_BUILD_ROOT
 - added gzipping documentation,
 - added Requires: inn >= 2.0,
 - added some %requires_pkg macros,
+- added new README.FIRST file,
 - cosmetics.
 
 * Sat Nov 28 1998 Marcin 'Qrczak' Kowalczyk <qrczak@knm.org.pl>
