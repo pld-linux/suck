@@ -2,25 +2,22 @@
 Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
-Version:	4.2.4
-Release:	3
-LIcense:	Public Domain
+Version:	4.2.5
+Release:	4
+License:	Public Domain
 Group:		Networking/News
-Group(de):	Netzwerkwesen/News
-Group(pl):	Sieciowe/News
-Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
+Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
+#http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
 Source1:	%{name}.logrotate
 Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 Patch2:		%{name}-perl-5.6.patch
-Patch3:		%{name}-crlf.patch
-Patch4:		%{name}-inn-sm.patch
 URL:		http://home.att.net/~bobyetman/
-BuildRequires:	perl >= 5.6
+BuildRequires:	perl-devel >= 5.6.1
 BuildRequires:	inn-devel >= 2.0
+BuildRequires:	autoconf
+BuildRequires:	automake
 Requires:	inn-libs >= 2.0
-Requires:	%{perl_archlib}
-%requires_eq    perl
 Provides:	news-sucker
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -51,25 +48,24 @@ zainstalowaniu tego pakietu!
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %build
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
 PERL_LIB_PLD="`perl -MExtUtils::Embed -e ldopts | tail -1`"
 export PERL_CORE_PLD PERL_LIB_PLD
+aclocal
+%{__autoconf}
 %configure
 
 # workaround for stupid inn 2.3 headers
-echo -e '#define HAVE_STRDUP\n#define HAVE_STRSPN' >> config.h
+#echo -e '#define HAVE_STRDUP\n#define HAVE_STRSPN' >> config.h
 echo -e '#define BOOL int\n#define OFFSET_T off_t' >> config.h
-echo '#define DO_TAGGED_HASH 1' >> config.h
 
 %{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_localstatedir},%{_sysconfdir}/logrotate.d} \
+install -d $RPM_BUILD_ROOT{%{_localstatedir},/etc/logrotate.d} \
 	$RPM_BUILD_ROOT/var/log
 
 %{__make} installall DESTDIR=$RPM_BUILD_ROOT
@@ -94,15 +90,12 @@ to
 test
 EOF
 
-gzip -9nf CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST \
-	perl/README
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc *.gz sample perl
+%doc  CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST sample perl
 %attr(755,root,root) %{_bindir}/*
 
 %config %{_sysconfdir}/logrotate.d/suck

@@ -1,45 +1,50 @@
-diff -Nru suck-4.2.4/Makefile.in suck-4.2.4.new/Makefile.in
---- suck-4.2.4/Makefile.in	Sun Aug 27 22:39:43 2000
-+++ suck-4.2.4.new/Makefile.in	Sun Aug 27 22:35:41 2000
+diff -Nur suck-4.2.5.orig/Makefile.in suck-4.2.5/Makefile.in
+--- suck-4.2.5.orig/Makefile.in	Sat Dec  2 13:19:00 2000
++++ suck-4.2.5/Makefile.in	Mon Feb 26 13:36:30 2001
 @@ -6,8 +6,8 @@
  ############################################################################
  
  # Step 1: Define ONE of the CHKHISTORY 
 -CHKHISTORY=chkhistory.o		# use flat file history routine
 -#CHKHISTORY=chkhistory_db.o	# use DB history routine, if you use 
-+#CHKHISTORY=chkhistory.o		# use flat file history routine
++#CHKHISTORY=chkhistory.o	# use flat file history routine
 +CHKHISTORY=chkhistory_db.o	# use DB history routine, if you use 
                                  # DBM, GDBM, NDBM, or DBZ
                                  # in order to use DBZ with INN you will need
                                  # the full compiled source code, especially
-@@ -20,7 +20,7 @@
- #DB_TYPE=-DUSE_GDBM	
+@@ -21,7 +21,7 @@
  #DB_TYPE=-DUSE_NDBM
  #DB_TYPE=-DUSE_DBZ	# for inn-1.X.X users
--#DB_TYPE=-DUSE_INN2	# for inn-2.X.X users
-+DB_TYPE=-DUSE_INN2	# for inn-2.X.X users
+ #DB_TYPE=-DUSE_INN2	# for inn-2.1-2.X users
+-#DB_TYPE=-DUSE_INN23	# for inn-2.3.X users
++DB_TYPE=-DUSE_INN23	# for inn-2.3.X users
  
  # Step 3: Define ONE Library that contains the functions
  # If you are using INN-2.X, and the compiler complains 
-@@ -30,12 +30,12 @@
+@@ -31,12 +31,12 @@
  #DB_LIB=-lgdbm
  #DB_LIB=-lndbm
  #DB_LIB=-ldbz
 -#DB_LIB=-linn -lstorage	# see note above
-+DB_LIB=-linn -lstorage	-ldb # see note above
++DB_LIB=-linn -lstorage	-ldb	# see note above
  #DB_LIB=-linn		# INN puts DBZ code in here
  
  # Step 4: IF your DB Library/Includes are in a non-standard place, 
  # define These
--#DB_INC_LOC=-I/usr/src/inn-2.2/include
+-#DB_INC_LOC=-I/usr/src/inn-2.3/include
 +DB_INC_LOC=-I/usr/include/inn
- #DB_LIB_LOC=-L/usr/news/lib
+ #DB_LIB_LOC=-L/usr/src/inn-2.3/lib
  
  # Step 5: If you want to use embedded PERL functions as kill routines
-@@ -53,6 +53,11 @@
- #PERL_DEFS=-DPERL_EMBED -Dbool=char -DHAS_BOOL
- #PERL_INC_LOC=-I$(PERL_CORE)
- #PERL_LIB_LOC=-L$(PERL_CORE)
+@@ -49,11 +49,11 @@
+ # add -lm to the PERL_LIB line.
+ # The rest of these should be left alone (except to remove the #).
+ # If you're using perl5.004 or older, add "-DOLD_PERL to PERL_DEFS
+-#PERL_CORE=/usr/lib/perl5/5.00503/i686-linux/CORE
+-#PERL_LIB=-lperl -lcrypt
+-#PERL_DEFS=-DPERL_EMBED -Dbool=char -DHAS_BOOL
+-#PERL_INC_LOC=-I$(PERL_CORE)
+-#PERL_LIB_LOC=-L$(PERL_CORE)
 +PERL_CORE=$(PERL_CORE_PLD)
 +PERL_LIB=$(PERL_LIB_PLD)
 +PERL_DEFS=-DPERL_EMBED -Dbool=char -DHAS_BOOL
@@ -48,7 +53,7 @@ diff -Nru suck-4.2.4/Makefile.in suck-4.2.4.new/Makefile.in
  
  # Step 6: If compiling for OS/2 uncomment the following
  #OS2_LD=-Zexe
-@@ -67,11 +72,11 @@
+@@ -68,11 +68,11 @@
  ############################################################################
  # my compile stuff
  ############################################################################
@@ -62,7 +67,7 @@ diff -Nru suck-4.2.4/Makefile.in suck-4.2.4.new/Makefile.in
    -Waggregate-return -Wmissing-prototypes -Wnested-externs -Wwrite-strings \
    -Wmissing-declarations
  ############################################################################
-@@ -109,7 +114,7 @@
+@@ -110,7 +110,7 @@
  CC = @CC@
  @SET_MAKE@
  
@@ -71,10 +76,10 @@ diff -Nru suck-4.2.4/Makefile.in suck-4.2.4.new/Makefile.in
  CPPFLAGS = -I. -I$(srcdir) @CPPFLAGS@
  LDFLAGS = @LDFLAGS@ $(DMALLOC_LD) $(OS2_LD)
  DEFS = @DEFS@ -DSUCK_VERSION=\"$(VERSION)\" $(DMALLOC_DEFS) $(OS2_DEFS) $(DMALLOC_INC)
-diff -Nru suck-4.2.4/README.FIRST suck-4.2.4.new/README.FIRST
---- suck-4.2.4/README.FIRST	Thu Jan  1 01:00:00 1970
-+++ suck-4.2.4.new/README.FIRST	Fri Aug  4 22:28:55 2000
-@@ -0,0 +1,25 @@
+diff -Nur suck-4.2.5.orig/README.FIRST suck-4.2.5/README.FIRST
+--- suck-4.2.5.orig/README.FIRST	Thu Jan  1 01:00:00 1970
++++ suck-4.2.5/README.FIRST	Mon Feb 26 13:37:21 2001
+@@ -0,0 +1,24 @@
 +Dear user,
 +
 +After installing the suck rpm you should browse the configuration
@@ -99,34 +104,31 @@ diff -Nru suck-4.2.4/README.FIRST suck-4.2.4.new/README.FIRST
 +
 +Bye,
 +    Karsten Weiss <karsten@addx.au.s.shuttle.de>
-+
-diff -Nru suck-4.2.4/killprg.c suck-4.2.4.new/killprg.c
---- suck-4.2.4/killprg.c	Sun Aug 27 22:39:43 2000
-+++ suck-4.2.4.new/killprg.c	Fri Aug  4 22:28:55 2000
-@@ -401,9 +401,12 @@
+diff -Nur suck-4.2.5.orig/killprg.c suck-4.2.5/killprg.c
+--- suck-4.2.5.orig/killprg.c	Tue May 16 00:34:01 2000
++++ suck-4.2.5/killprg.c	Mon Feb 26 13:38:47 2001
+@@ -401,9 +401,11 @@
  }
  /*--------------------------------------------------------------------------*/
  void killperl_done(PKillStruct master) {
 -        perl_destruct(master->perl_int);
 -        perl_free(master->perl_int);
 -        master->perl_int = NULL;
-+	if (master->perl_int != NULL)
-+	{
-+	        perl_destruct(master->perl_int);
++	if (master->perl_int != NULL) {
++        	perl_destruct(master->perl_int);
 +	        perl_free(master->perl_int);
 +	        master->perl_int = NULL;
 +	}
  	master->killfunc=chk_msg_kill; /* restore default function */
  }
  /*----------------------------------------------------------------------------*/
-diff -Nru suck-4.2.4/sample/get.news.generic suck-4.2.4.new/sample/get.news.generic
---- suck-4.2.4/sample/get.news.generic	Sun Aug 27 22:39:43 2000
-+++ suck-4.2.4.new/sample/get.news.generic	Fri Aug  4 22:28:55 2000
-@@ -5,20 +5,19 @@
- #NOTE: this script probably needs to be run by root.  Most systems will
+diff -Nur suck-4.2.5.orig/sample/get.news.generic suck-4.2.5/sample/get.news.generic
+--- suck-4.2.5.orig/sample/get.news.generic	Sat Feb 20 00:32:57 1999
++++ suck-4.2.5/sample/get.news.generic	Mon Feb 26 13:53:39 2001
+@@ -6,27 +6,32 @@
  # not let a normal user run rnews
  
--
+ 
 -REMOTE_HOST=news.pixi.com
 +REMOTE_HOST=news.icm.edu.pl
  LOCAL_HOST=localhost
@@ -148,9 +150,33 @@ diff -Nru suck-4.2.4/sample/get.news.generic suck-4.2.4.new/sample/get.news.gene
  SCRIPT=${BASEDIR}/put.news		# my filter for rpost
  OUTFILE=/tmp/tmp$$			# used by rpost as article after it is filtered
  LOCKFILE=${BASEDIR}/getnews.lock	# lock file to prevent multiple instances of script
-diff -Nru suck-4.2.4/sample/get.news.inn suck-4.2.4.new/sample/get.news.inn
---- suck-4.2.4/sample/get.news.inn	Sun Aug 27 22:39:43 2000
-+++ suck-4.2.4.new/sample/get.news.inn	Fri Aug  4 22:28:55 2000
+ 
+ TESTHOST=testhost
+-RPOST=rpost
+ SUCK=suck
+-TESTHOST=testhost
++
++# for INN 2.x with Storage API use:
++SCRIPT=${BASEDIR}/put.news.sm		# my filter for rpost
++RPOST=rpost				# rpost command
++# for INN <2.3 without storage API use:
++#SCRIPT=${BASEDIR}/put.news		# my filter for rpost
++#RPOST="rpost -p ${SPOOLDIR}"		# rpost command
+ 
+ # if we are already running, abort
+ 
+@@ -72,7 +77,7 @@
+ 		if [ $? -ne 0 ]; then
+ 			echo "Remote posting host not responding"
+ 		else
+-			${RPOST} ${REMOTE_HOST} -d -b ${OUTGOING} -p ${SPOOLDIR} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
++			${RPOST} ${REMOTE_HOST} -d -b ${OUTGOING} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
+ 
+ 			if [ $? -ne 0 ]; then
+ 				echo "Error remote posting"
+diff -Nur suck-4.2.5.orig/sample/get.news.inn suck-4.2.5/sample/get.news.inn
+--- suck-4.2.5.orig/sample/get.news.inn	Sat Sep 27 09:29:59 1997
++++ suck-4.2.5/sample/get.news.inn	Mon Feb 26 13:55:06 2001
 @@ -5,12 +5,13 @@
  #NOTE: this script probably needs to be run by root.  Most systems will
  # not let a normal user run ctlinnd 
@@ -169,7 +195,7 @@ diff -Nru suck-4.2.4/sample/get.news.inn suck-4.2.4.new/sample/get.news.inn
  
  CTLINND=${NEWSDIR}/bin/ctlinnd		# location of binary
  SHLOCK=${NEWSDIR}/bin/shlock		# location of binary
-@@ -18,8 +19,6 @@
+@@ -18,20 +19,23 @@
  TMPDIR=${BASEDIR}			# location for suck.* files
  MSGDIR=${BASEDIR}/Msgs			# where to put MultiFile messages when getting them
  
@@ -178,7 +204,26 @@ diff -Nru suck-4.2.4/sample/get.news.inn suck-4.2.4.new/sample/get.news.inn
  OUTGOING=${SPOOLDIR}/out.going/${SITE}	# location of the list of articles to upload
  OUTGOINGNEW=${OUTGOING}.new		# file to contain the list temporarily
  OUTGOINGFAIL=${OUTGOINGNEW}.fail	# file with failed xfers
-@@ -50,73 +49,79 @@
+-SCRIPT=${BASEDIR}/put.news		# my filter for rpost
+ OUTFILE=/tmp/tmp$$			# used by rpost as article after it is filtered
+ LOCKFILE=${BASEDIR}/getnews.lock	# lock file to prevent multiple instances of script
+ NEWSGROUP=news				# which group owns the file in out.going, typically either news or uucp.
+ 
+ TESTHOST=testhost
+-RPOST=rpost
+ SUCK=suck
+ 
++# for INN 2.x with Storage API use:
++SCRIPT=${BASEDIR}/put.news.sm		# my filter for rpost
++RPOST=rpost				# rpost command
++# for INN <2.3 without storage API use:
++#SCRIPT=${BASEDIR}/put.news		# my filter for rpost
++#RPOST="rpost -p ${SPOOLDIR}"		# rpost command
++
+ # if we are already running, abort 
+ 
+ trap 'rm -f ${LOCKFILE} ; echo "Aborting" ; exit 1' 1 2 3 15
+@@ -50,73 +54,78 @@
  REMOTE_RESULT=$?
  
  if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
@@ -223,26 +268,12 @@ diff -Nru suck-4.2.4/sample/get.news.inn suck-4.2.4.new/sample/get.news.inn
 -				mv ${OUTGOING} ${OUTGOINGNEW}
 -				${CTLINND} flush ${SITE}
 -			fi
- 
+-
 -			# outgoing messages to post
 -			${RPOST} ${REMOTE_HOST} -d -b ${OUTGOINGNEW} -p ${SPOOLDIR} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
--
--			ERRLEV=$?
--			if [ ${ERRLEV} -eq 0 ]; then
--				echo "Remotely posted articles"
--				rm ${OUTFILE}
--			elif [ ${ERRLEV} -eq 1 ]; then
--				echo "Error posting a message"
--			elif [ ${ERRLEV} -eq 2 ]; then
--				echo "Unable to do NNTP authorization with remote server"
--			elif [ ${ERRLEV} -eq 3 ]; then
--				echo "Unexpected answer from remote server to a command while doing NNTP authorization"
--			elif [ ${ERRLEV} -eq -1 ]; then
--				echo "Fatal error"
--			fi
 +	{
 +		# download messages
-+		${SUCK} ${REMOTE_HOST} -c -bp -hl ${LOCAL_HOST} -dt ${TMPDIR} -dm ${MSGDIR} -dd ${BASEDIR}
++		${SUCK} ${REMOTE_HOST} -c -A -bp -hl ${LOCAL_HOST} -dt ${TMPDIR} -dm ${MSGDIR} -dd ${BASEDIR}
 +		SUCK_STATUS=$?
 +
 +		if [ ${SUCK_STATUS} -eq 0 ]; then
@@ -258,10 +289,18 @@ diff -Nru suck-4.2.4/sample/get.news.inn suck-4.2.4.new/sample/get.news.inn
 +		fi
 +	} &
  
--			if [ -f ${OUTGOINGFAIL} ]; then
--				mv ${OUTGOINGFAIL} ${OUTGOINGNEW}	# so we can re do it
--				chown news.${NEWSGROUP} ${OUTGOINGNEW}
--				chmod 664 ${OUTGOINGNEW}
+-			ERRLEV=$?
+-			if [ ${ERRLEV} -eq 0 ]; then
+-				echo "Remotely posted articles"
+-				rm ${OUTFILE}
+-			elif [ ${ERRLEV} -eq 1 ]; then
+-				echo "Error posting a message"
+-			elif [ ${ERRLEV} -eq 2 ]; then
+-				echo "Unable to do NNTP authorization with remote server"
+-			elif [ ${ERRLEV} -eq 3 ]; then
+-				echo "Unexpected answer from remote server to a command while doing NNTP authorization"
+-			elif [ ${ERRLEV} -eq -1 ]; then
+-				echo "Fatal error"
 +	{
 +		# upload messages
 +		if [ -s ${OUTGOING}  -o -s ${OUTGOINGNEW} ]; then
@@ -289,7 +328,7 @@ diff -Nru suck-4.2.4/sample/get.news.inn suck-4.2.4.new/sample/get.news.inn
 +				fi
 +
 +				# outgoing messages to post
-+				${RPOST} ${REMOTE_HOST} -d -b ${OUTGOINGNEW} -p ${SPOOLDIR} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
++				${RPOST} ${REMOTE_HOST} -d -b ${OUTGOINGNEW} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
 +
 +				ERRLEV=$?
 +				if [ ${ERRLEV} -eq 0 ]; then
@@ -311,19 +350,25 @@ diff -Nru suck-4.2.4/sample/get.news.inn suck-4.2.4.new/sample/get.news.inn
 +					chmod 664 ${OUTGOINGNEW}
 +				fi
  			fi
- 		fi
--	fi	
--	
++		fi	
 +	} &
 +
 +	wait
-+
+ 
+-			if [ -f ${OUTGOINGFAIL} ]; then
+-				mv ${OUTGOINGFAIL} ${OUTGOINGNEW}	# so we can re do it
+-				chown news.${NEWSGROUP} ${OUTGOINGNEW}
+-				chmod 664 ${OUTGOINGNEW}
+-			fi
+-		fi
+-	fi	
+-	
  	echo "You can hang up the modem now"
  
  fi
-diff -Nru suck-4.2.4/sample/put.news suck-4.2.4.new/sample/put.news
---- suck-4.2.4/sample/put.news	Sun Aug 27 22:39:43 2000
-+++ suck-4.2.4.new/sample/put.news	Sun Aug 27 22:37:21 2000
+diff -Nur suck-4.2.5.orig/sample/put.news suck-4.2.5/sample/put.news
+--- suck-4.2.5.orig/sample/put.news	Sun Oct  4 21:32:26 1998
++++ suck-4.2.5/sample/put.news	Mon Feb 26 13:48:06 2001
 @@ -1,34 +1,10 @@
  #!/bin/sh
  
@@ -365,12 +410,18 @@ diff -Nru suck-4.2.4/sample/put.news suck-4.2.4.new/sample/put.news
 +
 +awk '
 +	/^$/ {body = 1}
-+	body || !/^(NNTP-Posting-Host|Xref):/
++	body || !/^(NNTP-Posting-Host|NNTP-Posting-Date|X-Trace|X-Complaints-To|Xref):/
 +' $1 >$2
-diff -Nru suck-4.2.4/sample/put.news.sm suck-4.2.4.new/sample/put.news.sm
---- suck-4.2.4/sample/put.news.sm	Sun Aug 27 22:39:43 2000
-+++ suck-4.2.4.new/sample/put.news.sm	Sun Aug 27 22:37:50 2000
-@@ -6,21 +6,7 @@
+diff -Nur suck-4.2.5.orig/sample/put.news.sm suck-4.2.5/sample/put.news.sm
+--- suck-4.2.5.orig/sample/put.news.sm	Mon Mar 13 21:50:42 2000
++++ suck-4.2.5/sample/put.news.sm	Mon Feb 26 13:49:11 2001
+@@ -1,26 +1,12 @@
+ #!/bin/sh
+ 
+-# this is just a simple script to use sed to strip off the 
++# this is just a simple script to use awk to strip off the 
+ # NNTP_Posting_Host and Xref headers that my ISP's newsfeed 
+ # doesn't like.
  # It is set up for INND using CNFS, so it uses the sm command
  # to get the actual article
  
@@ -396,9 +447,9 @@ diff -Nru suck-4.2.4/sample/put.news.sm suck-4.2.4.new/sample/put.news.sm
 +    /^$/ {body = 1}
 +    body || !/^(NNTP-Posting-Host|NNTP-Posting-Date|X-Trace|X-Complaints-To|Xref):/
 +    ' > $2
-diff -Nru suck-4.2.4/suck_config.h suck-4.2.4.new/suck_config.h
---- suck-4.2.4/suck_config.h	Sun Aug 27 22:39:43 2000
-+++ suck-4.2.4.new/suck_config.h	Sun Aug 27 22:36:30 2000
+diff -Nur suck-4.2.5.orig/suck_config.h suck-4.2.5/suck_config.h
+--- suck-4.2.5.orig/suck_config.h	Wed Jun 14 00:15:22 2000
++++ suck-4.2.5/suck_config.h	Mon Feb 26 13:51:54 2001
 @@ -66,7 +66,7 @@
  
  /* FULL PATH of error log used if -e option specifed to any of the programs */
@@ -408,18 +459,18 @@ diff -Nru suck-4.2.4/suck_config.h suck-4.2.4.new/suck_config.h
  
  /* FULL PATH of status messages log if -s option specified to any of the programs */
  /* can be overridden at the command line with -S option */
-@@ -91,8 +91,8 @@
+@@ -92,8 +92,8 @@
  #define N_LMOVE_CONFIG  "lmove-config"          /* config file for lmove */
  #define N_XOVER         "suckxover"             /* parameter file for which articles NOT to download via xover */
  #define N_NODOWNLOAD    "sucknodownload"        /* file name for message-ids that I never download */
 -#define N_PHRASES "/usr/local/lib/suck.phrases"	/* default location for phrase file */
 -#define HISTORY_FILE "/usr/news/db/history"     /* default location for history file */
 +#define N_PHRASES "/usr/lib/suck.phrases"	/* default location for phrase file */
-+#define HISTORY_FILE "/var/lib/news/history"     /* default location for history file */
++#define HISTORY_FILE "/var/lib/news/history"	/* default location for history file */
  
  /* TEMP FILES created */
  #define N_NEWRC "suck.newrc"
-@@ -107,7 +107,7 @@
+@@ -108,7 +108,7 @@
  #define N_OLD_OLDRC    "sucknewsrc.old"
  
  /* Various DIRECTORY PATHS, these can be overriden from command line */
@@ -428,7 +479,7 @@ diff -Nru suck-4.2.4/suck_config.h suck-4.2.4.new/suck_config.h
  #define N_DATADIR "."		/* location of Data Files */
  #define N_MSGDIR "./Msgs"	/*location of articles produced by suck, if multifile option selected */
  
-@@ -124,7 +124,7 @@
+@@ -125,7 +125,7 @@
  #define RPOST_FAIL_EXT ".fail"
  
  /* RNEWS program called by lpost */
