@@ -125,15 +125,3 @@ rm -rf $RPM_BUILD_ROOT
 %config %attr(644,news,news) /var/state/%{name}/sucknewsrc
 
 %{_mandir}/man1/*
-
-%changelog
-* Wed May 26 1999 Piotr Czerwiñski <pius@pld.org.pl> 
-  [4.2.1-1]
-- updated to 4.2.1,
-- added more macros.
-
-* Mon May 24 1999 Piotr Czerwiñski <pius@pld.org.pl> 
-  [4.2.0-2]
-- package is FHS 2.0 compliant,
-- based on spec file written by Ian Macdonald <ianmacd@xs4all.nl>, rewritten 
-  for PLD use by me and Marcin 'Qrczak' Kowalczyk <qrczak@knm.org.pl>.
