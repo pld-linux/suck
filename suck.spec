@@ -114,7 +114,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc  CHANGELOG CONTENTS README README.Gui README.Xover perl
 %attr(755,root,root) %{_bindir}/*
 
-%config /etc/logrotate.d/suck
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/logrotate.d/suck
 %dir %{_localstatedir}
 %attr(750,root,root) %config(noreplace) %{_localstatedir}/get.news.inn
 %attr(750,root,root) %config(noreplace) %{_localstatedir}/get.news.generic
