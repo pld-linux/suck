@@ -1,9 +1,10 @@
+# TODO: update PLD patch
 %include	/usr/lib/rpm/macros.perl
 Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.3.1
-Release:	2
+Release:	1.1
 License:	Public Domain
 Group:		Networking/News
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
