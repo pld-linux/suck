@@ -8,7 +8,7 @@ Copyright:	Public Domain
 Group:		Networking/News
 Group(pl):	Sieciowe/News
 Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
-Source1:	suck.logrotate
+Source1:	%{name}.logrotate
 Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 URL:		http://home.att.net/~bobyetman/index.html
@@ -25,23 +25,23 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		_sysconfdir	/etc
 
 %description
-The primary use for suck is to feed a local INN or CNEWS server, without
-the remote NNTP feeding you articles.  It is designed for a small, partial
-news feed.  It is NOT designed to feed 10,000 groups and 3 Gigs of articles
-a day.
+The primary use for suck is to feed a local INN or CNEWS server,
+without the remote NNTP feeding you articles. It is designed for a
+small, partial news feed. It is NOT designed to feed 10,000 groups and
+3 Gigs of articles a day.
 
-Read %{_defaultdocdir}/%{name}-%{version}/README.FIRST after installing 
-this package!
+Read %{_defaultdocdir}/%{name}-%{version}/README.FIRST.gz after
+installing this package!
 
 %description -l pl
-suck dostarcza posty lokalnemu serwerowi newsów, INN-owi albo CNEWS-owi,
-przed zdalnym serwerem udaj±c zwyk³y czytnik, a wiêc bez wymagania
-konfiguracji feedu z tamtej strony. Jest przeznaczony do ma³ego,
-czê¶ciowego feedu. Nie jest przeznaczony dla 10000 grup i 3 GB postów
-dziennie.
+suck dostarcza posty lokalnemu serwerowi newsów, INN-owi albo
+CNEWS-owi, przed zdalnym serwerem udaj±c zwyk³y czytnik, a wiêc bez
+wymagania konfiguracji feedu z tamtej strony. Jest przeznaczony do
+ma³ego, czê¶ciowego feedu. Nie jest przeznaczony dla 10000 grup i 3 GB
+postów dziennie.
 
-Przeczytaj %{_defaultdocdir}/%{name}-%{version}/README.FIRST po zainstalowaniu
-tego pakietu!
+Przeczytaj %{_defaultdocdir}/%{name}-%{version}/README.FIRST.gz po
+zainstalowaniu tego pakietu!
 
 %prep
 %setup -q
