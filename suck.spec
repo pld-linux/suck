@@ -53,7 +53,7 @@ PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
 export PERL_CORE_PLD
 
 CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" \
-./configure \
+./configure %{_target} \
 	--prefix=$RPM_BUILD_ROOT/usr
 
 make
