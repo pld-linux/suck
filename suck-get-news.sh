@@ -67,9 +67,9 @@ if [ $? -ne 0 ]; then
 fi
 
 
-if [ ${VIA_SSH} == "yes" ]; then
+if [ "${VIA_SSH}" = "yes" ]; then
 	
-	su $VIA_USER -c "ssh -f -C -L $VIA_PORT:news.mimuw.edu.pl:119 \
+	su $VIA_USER -c "ssh -f -C -L $VIA_PORT:$REMOTE_HOST:119 \
 	-l $VIA_USER $VIA_HOST sleep 120"
 
 fi
@@ -79,7 +79,7 @@ ${TESTHOST} ${LOCAL_HOST} -s ${USE_MODEREADER}
 LOCAL_RESULT=0
 
 # is the remote host up and running so we can download messages?
-if [ ${VIA_SSH} == "yes" ]; then
+if [ "${VIA_SSH}" = "yes" ]; then
 	${TESTHOST} localhost -N $VIA_PORT -s ${USE_MODEREADER}
 	REMOTE_RESULT=$?
 else
@@ -90,7 +90,7 @@ fi
 if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
 	{
 		# download messages
-		if [ ${VIA_SSH} == "yes" ]; then
+		if [ "${VIA_SSH}" = "yes" ]; then
 			${SUCK} localhost -N $VIA_PORT -c -A -bp -hl ${LOCAL_HOST} -dt ${TMPDIR} -dm ${MSGDIR} -dd ${BASEDIR} ${USE_MODEREADER} -i 500
 		SUCK_STATUS=$?
 		else
@@ -115,7 +115,7 @@ if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
 		# upload messages
 		if [ -s ${OUTGOING}  -o -s ${OUTGOINGNEW} ]; then
 
-			if [ ${VIA_SSH} == "yes" ]; then
+			if [ "${VIA_SSH}" = "yes" ]; then
 				${TESTHOST} localhost -N $VIA_PORT -s
 				RESULT=$?
 			else
@@ -144,7 +144,7 @@ if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
 				fi
 
 	# outgoing messages to post
-				if [ ${VIA_SSH} == "yes" ]; then
+				if [ "${VIA_SSH}" = "yes" ]; then
 					${RPOST} localhost -N ${VIA_PORT} ${USE_MODEREADER} -d -b ${OUTGOINGNEW} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
 				ERRLEV=$?
 				else			
