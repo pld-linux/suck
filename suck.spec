@@ -1,7 +1,7 @@
 Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
-Version:	4.2.1
+Version:	4.2.2
 Release:	1
 Copyright:	Public Domain
 Group:		Networking/News
