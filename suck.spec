@@ -14,6 +14,7 @@ Patch1:		%{name}-DESTDIR.patch
 URL:		http://home.att.net/~bobyetman/index.html
 BuildRequires:	perl
 BuildRequires:	inn-devel >= 2.0
+BuildRequires:	inn-static >= 2.0
 Requires:	inn >= 2.0
 Requires:	gawk
 Requires:	%{perl_archlib}
