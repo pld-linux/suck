@@ -19,7 +19,7 @@ Requires:	gawk
 Requires:	%{perl_archlib}
 %requires_eq    perl
 Provides:	news-sucker
-BuildRoot:	/tmp/%{name}-%{version}-root
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_localstatedir	/var/state/suck
 %define		_sysconfdir	/etc
