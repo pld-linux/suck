@@ -1,16 +1,16 @@
 --- suck-4.2.2/Makefile.in~	Tue Nov 16 21:34:46 1999
 +++ suck-4.2.2/Makefile.in	Tue Nov 16 21:38:03 1999
-@@ -171,28 +171,28 @@
+@@ -171,28 +171,26 @@
  #install_Spanish: install_bin install_sman
  
  install_bin: suck rpost testhost lmove
 -	- mkdir -p $(bindir)
-+	- mkdir -p $(DESTDIR)$(bindir)
- 	- strip -s suck rpost testhost lmove
+-	- strip -s suck rpost testhost lmove
 -	$(INSTALL_PROGRAM) suck $(bindir)/suck
 -	$(INSTALL_PROGRAM) rpost $(bindir)/rpost
 -	$(INSTALL_PROGRAM) testhost $(bindir)/testhost
 -	$(INSTALL_PROGRAM) lmove $(bindir)/lmove
++	- mkdir -p $(DESTDIR)$(bindir)
 +	$(INSTALL_PROGRAM) suck $(DESTDIR)$(bindir)/suck
 +	$(INSTALL_PROGRAM) rpost $(DESTDIR)$(bindir)/rpost
 +	$(INSTALL_PROGRAM) testhost $(DESTDIR)$(bindir)/testhost
@@ -34,7 +34,7 @@
  #	$(MAKE) -C $(SMAN)
  
  install_lpost: lpost $(MAN)/lpost.1
- 	- strip -s lpost
+-	- strip -s lpost
 -	$(INSTALL_PROGRAM) lpost $(bindir)/lpost
 -	$(INSTALL_DATA) $(MAN)/lpost.1 $(mandir)/lpost.$(manext)
 +	$(INSTALL_PROGRAM) lpost $(DESTDIR)$(bindir)/lpost

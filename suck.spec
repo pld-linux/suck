@@ -2,21 +2,22 @@
 Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
-Version:	4.2.5
-Release:	4
+Version:	4.3.1
+Release:	1
 License:	Public Domain
 Group:		Networking/News
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
-#http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
 Source1:	%{name}.logrotate
 Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 Patch2:		%{name}-perl-5.6.patch
-URL:		http://home.att.net/~bobyetman/
-BuildRequires:	perl-devel >= 5.6.1
-BuildRequires:	inn-devel >= 2.0
+Patch3:		%{name}-gets.patch
+URL:		http://www.sucknews.org/index.html
 BuildRequires:	autoconf
 BuildRequires:	automake
+BuildRequires:	inn-devel >= 2.0
+BuildRequires:	openssl-devel
+BuildRequires:	perl-devel >= 5.6.1
 Requires:	inn-libs >= 2.0
 Provides:	news-sucker
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -30,7 +31,7 @@ without the remote NNTP feeding you articles. It is designed for a
 small, partial news feed. It is NOT designed to feed 10,000 groups and
 3 Gigs of articles a day.
 
-Read %{_defaultdocdir}/%{name}-%{version}/README.FIRST.gz after
+Read %{_defaultdocdir}/%{name}-%{version}/README.FIRST* after
 installing this package!
 
 %description -l pl
@@ -40,7 +41,7 @@ wymagania konfiguracji feedu z tamtej strony. Jest przeznaczony do
 ma³ego, czê¶ciowego feedu. Nie jest przeznaczony dla 10000 grup i 3 GB
 postów dziennie.
 
-Przeczytaj %{_defaultdocdir}/%{name}-%{version}/README.FIRST.gz po
+Przeczytaj %{_defaultdocdir}/%{name}-%{version}/README.FIRST* po
 zainstalowaniu tego pakietu!
 
 %prep
@@ -48,18 +49,18 @@ zainstalowaniu tego pakietu!
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 %build
-PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
-PERL_LIB_PLD="`perl -MExtUtils::Embed -e ldopts | tail -1`"
-export PERL_CORE_PLD PERL_LIB_PLD
 %{__aclocal}
 %{__autoconf}
 %configure
 
 # workaround for stupid inn 2.3 headers
-#echo -e '#define HAVE_STRDUP\n#define HAVE_STRSPN' >> config.h
-echo -e '#define BOOL int\n#define OFFSET_T off_t' >> config.h
+cat >> config.h <<EOF
+#define BOOL int
+#define OFFSET_T off_t
+EOF
 
 %{__make}
 
