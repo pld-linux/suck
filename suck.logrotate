@@ -1,0 +1,7 @@
+/var/log/suck.errlog {
+    create 644 news news
+}
+
+/var/state/suck/suck.killlog {
+    create 644 news news
+}
