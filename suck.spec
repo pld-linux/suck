@@ -69,7 +69,7 @@ echo '#define DO_TAGGED_HASH 1' >> config.h
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_localstatedir},%{_sysconfdir}/logrotate.d} \
+install -d $RPM_BUILD_ROOT{%{_localstatedir},/etc/logrotate.d} \
 	$RPM_BUILD_ROOT/var/log
 
 %{__make} installall DESTDIR=$RPM_BUILD_ROOT
