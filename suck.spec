@@ -53,7 +53,7 @@ zainstalowaniu tego pakietu!
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
 PERL_LIB_PLD="`perl -MExtUtils::Embed -e ldopts | tail -1`"
 export PERL_CORE_PLD PERL_LIB_PLD
-aclocal
+%{__aclocal}
 %{__autoconf}
 %configure
 
