@@ -17,8 +17,8 @@ Provides:	news-sucker
 Requires:	inn >= 2.0
 Requires:	gawk
 %requires_eq    perl
-BuildPrereq:	perl
-BuildPrereq:	inn-devel >= 2.0
+BuildRequires:	perl
+BuildRequires:	inn-devel >= 2.0
 URL:		http://home.att.net/~bobyetman/index.html
 BuildRoot:	/tmp/%{name}-%{version}-root
 
