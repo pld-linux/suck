@@ -18,8 +18,6 @@ URL:		http://home.att.net/~bobyetman/
 BuildRequires:	perl >= 5.6
 BuildRequires:	inn-devel >= 2.0
 Requires:	inn-libs >= 2.0
-Requires:	%{perl_archlib}
-%requires_eq    perl
 Provides:	news-sucker
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
