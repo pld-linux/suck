@@ -19,6 +19,7 @@ Requires:	gawk
 %requires_eq    perl
 BuildPrereq:	autoconf >= 2.13-8
 BuildPrereq:	perl
+BuildPrereq:	inn-devel >= 2.0
 URL:		http://home.att.net/~bobyetman/index.html
 BuildRoot:	/tmp/%{name}-%{version}-root
 
