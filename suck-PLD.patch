@@ -141,7 +141,7 @@ diff -Nur suck-4.3.2.orig/sample/get.news.generic suck-4.3.2/sample/get.news.gen
  MSGDIR=${BASEDIR}/Msgs			# where to put MultiFile articles when getting them
  
 -OUTGOING=${SPOOLDIR}/out.going/pixi	# location of the list of articles to upload
-+OUTGOING=${SPOOLDIR}/out.going/${REMOTE_HOST}	# location of the list of articles to upload
++OUTGOING=${SPOOLDIR}/outgoing/${REMOTE_HOST}	# location of the list of articles to upload
  SCRIPT=${BASEDIR}/put.news		# my filter for rpost
  OUTFILE=/tmp/tmp$$			# used by rpost as article after it is filtered
  LOCKFILE=${BASEDIR}/getnews.lock	# lock file to prevent multiple instances of script
