@@ -1,22 +1,28 @@
+%include	/usr/lib/rpm/macros.perl
 Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.2.2
-Release:	1
+Release:	2
 Copyright:	Public Domain
 Group:		Networking/News
 Group(pl):	Sieciowe/News
 Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
 Source1:	suck.log
 Patch0:		%{name}-PLD.patch
-Provides:	news-sucker
-Requires:	inn >= 2.0
-Requires:	gawk
-%requires_eq    perl
+Patch1:		%{name}-DESTDIR.patch
+URL:		http://home.att.net/~bobyetman/index.html
 BuildRequires:	perl
 BuildRequires:	inn-devel >= 2.0
-URL:		http://home.att.net/~bobyetman/index.html
+Requires:	inn >= 2.0
+Requires:	gawk
+Requires:	%{perl_archlib}
+%requires_eq    perl
+Provides:	news-sucker
 BuildRoot:	/tmp/%{name}-%{version}-root
+
+%define		_localstatedir	/var/state/suck
+%define		_sysconfdir	/etc
 
 %description
 The primary use for suck is to feed a local INN or CNEWS server, without
@@ -24,7 +30,7 @@ the remote NNTP feeding you articles.  It is designed for a small, partial
 news feed.  It is NOT designed to feed 10,000 groups and 3 Gigs of articles
 a day.
 
-Read /usr/share/doc/%{name}-%{version}/README.FIRST after installing 
+Read %{_defaultdocdir}/%{name}-%{version}/README.FIRST after installing 
 this package!
 
 %description -l pl
@@ -34,28 +40,30 @@ konfiguracji feedu z tamtej strony. Jest przeznaczony do ma³ego,
 czê¶ciowego feedu. Nie jest przeznaczony dla 10000 grup i 3 GB postów
 dziennie.
 
-Przeczytaj /usr/share/doc/%{name}-%{version}/README.FIRST po zainstalowaniu
+Przeczytaj %{_defaultdocdir}/%{name}-%{version}/README.FIRST po zainstalowaniu
 tego pakietu!
 
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 %build
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
-export PERL_CORE_PLD
+PERL_LIB_PLD="`perl -MExtUtils::Embed -e ldopts | tail -1`"
+CFLAGS="$RPM_OPT_FLAGS"
+LDFLAGS="-s"
+export PERL_CORE_PLD PERL_LIB_PLD CFLAGS LDFLAGS
+%configure
 
-CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" \
-./configure %{_target_platform} \
-	--prefix=$RPM_BUILD_ROOT%{_prefix} \
-	--mandir=$RPM_BUILD_ROOT%{_mandir}
 make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/{etc/logrotate.d,var/state/%{name}}
+install -d $RPM_BUILD_ROOT{%{_localstatedir},%{_sysconfdir}/logrotate.d} \
+	$RPM_BUILD_ROOT/var/log
 
-make installall prefix=$RPM_BUILD_ROOT%{_prefix}
+make installall DESTDIR=$RPM_BUILD_ROOT
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
 install sample/get.news.inn \
@@ -63,38 +71,23 @@ install sample/get.news.inn \
 	sample/put.news \
 	sample/put.news.sm \
 	sample/*.pl \
-	$RPM_BUILD_ROOT/var/state/%{name}
+	$RPM_BUILD_ROOT%{_localstatedir}
 install sample/sucknewsrc.sample \
-	$RPM_BUILD_ROOT/var/state/%{name}/sucknewsrc
+	$RPM_BUILD_ROOT%{_localstatedir}/sucknewsrc
+
+touch $RPM_BUILD_ROOT/var/log/suck.errlog
+touch $RPM_BUILD_ROOT%{_localstatedir}/suck.killlog
+
+cat > $RPM_BUILD_ROOT%{_localstatedir}/active-ignore <<EOF
+control
+junk
+to
+test
+EOF
 
 gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/* \
 	CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST \
 	perl/README
-
-%post 
-if [ "$1" = 1 ]; then
-  # Create initial log files so that logrotate doesn't complain
-  touch /var/log/%{name}.errlog
-  chown news.news /var/log/%{name}.errlog
-  chmod 644 /var/log/%{name}.errlog
-  touch /var/state/%{name}/%{name}.killlog
-  chown news.news /var/state/%{name}/%{name}.killlog
-  chmod 644 /var/state/%{name}/%{name}.killlog
-fi
-
-%preun
-if [ "$1" = 0 ]; then
-  # Remove current killfile log, or rpm -e will complain dir isn't empty
-  rm -f /var/state/%{name}/%{name}.killlog*
-fi
-
-%postun
-if [ "$1" = 0 ]; then
-  # Remove suck error logs
-  rm -f /var/log/%{name}.errlog*
-  # Remove any old killfile logs rotated to /var/log
-  rm -f /var/log/%{name}.killlog*
-fi
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -105,15 +98,19 @@ rm -rf $RPM_BUILD_ROOT
 %doc sample perl
 
 %attr(755,root,root) %{_bindir}/*
-%config /etc/logrotate.d/%{name}
 
-%attr(775,news,news) %dir /var/state/%{name}
+%config %{_sysconfdir}/logrotate.d/suck
 
-%config %attr(740,news,news) /var/state/%{name}/get.news.inn
-%config %attr(740,news,news) /var/state/%{name}/get.news.generic
-%config %attr(740,news,news) /var/state/%{name}/put.news
-%config %attr(740,news,news) /var/state/%{name}/put.news.sm
-%config %attr(740,news,news) /var/state/%{name}/*.pl
-%config %attr(644,news,news) /var/state/%{name}/sucknewsrc
+%attr(755,root,root) %dir %{_localstatedir}
+%config %attr(750,root,root) %{_localstatedir}/get.news.inn
+%config %attr(750,root,root) %{_localstatedir}/get.news.generic
+%config %attr(750,root,root) %{_localstatedir}/put.news
+%config %attr(750,root,root) %{_localstatedir}/put.news.sm
+%config %attr(750,root,root) %{_localstatedir}/*.pl
+%config %attr(640,root,root) %{_localstatedir}/sucknewsrc
+%config %attr(640,root,root) %{_localstatedir}/active-ignore
+
+%attr(640,root,root) %ghost %{_localstatedir}/suck.killlog*
+%attr(640,root,root) %ghost /var/log/*
 
 %{_mandir}/man1/*
