@@ -3,7 +3,7 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.2.3
-Release:	1
+Release:	2
 Copyright:	Public Domain
 Group:		Networking/News
 Group(pl):	Sieciowe/News
@@ -21,7 +21,7 @@ Requires:	%{perl_archlib}
 Provides:	news-sucker
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_localstatedir	/var/state/suck
+%define		_localstatedir	/var/lib/suck
 %define		_sysconfdir	/etc
 
 %description
