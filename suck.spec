@@ -16,8 +16,8 @@ Patch3:		suck-perl_int.patch
 Patch4:		suck-scripts.patch
 Provides:	news-sucker
 Requires:	inn >= 2.0
-%requires_pkg	perl
-%requires_pkg	gawk
+Requires:	perl
+Requires:	gawk
 URL:		http://home.att.net/~bobyetman/index.html
 BuildRoot:	/tmp/%{name}-%{version}-root
 
