@@ -26,7 +26,7 @@ diff -Nru suck-4.2.4/Makefile.in suck-4.2.4.new/Makefile.in
  #DB_LIB=-lndbm
  #DB_LIB=-ldbz
 -#DB_LIB=-linn -lstorage	# see note above
-+DB_LIB=-linn -lstorage	# see note above
++DB_LIB=-linn -lstorage	-ldb # see note above
  #DB_LIB=-linn		# INN puts DBZ code in here
  
  # Step 4: IF your DB Library/Includes are in a non-standard place, 
