@@ -98,7 +98,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc  CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST sample perl
 %attr(755,root,root) %{_bindir}/*
 
-%config %{_sysconfdir}/logrotate.d/suck
+%config /etc/logrotate.d/suck
 %dir %{_localstatedir}
 %attr(750,root,root) %config(noreplace) %{_localstatedir}/get.news.inn
 %attr(750,root,root) %config(noreplace) %{_localstatedir}/get.news.generic
