@@ -16,7 +16,6 @@ BuildRequires:	perl
 BuildRequires:	inn-devel >= 2.0
 BuildRequires:	inn-static >= 2.0
 Requires:	inn >= 2.0
-Requires:	gawk
 Requires:	%{perl_archlib}
 %requires_eq    perl
 Provides:	news-sucker
