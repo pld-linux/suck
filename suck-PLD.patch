@@ -74,11 +74,11 @@ diff -ruN suck-4.2.2.orig/README.FIRST suck-4.2.2/README.FIRST
 +Dear user,
 +
 +After installing the suck rpm you should browse the configuration
-+files in /var/state/suck and change them to your needs. Check out the
++files in /var/lib/suck and change them to your needs. Check out the
 +suck documentation and man pages for more help.
 +
 +Now you can execute (as user news) the script
-+/var/state/suck/get.news.inn or /var/state/suck/get.news.generic
++/var/lib/suck/get.news.inn or /var/lib/suck/get.news.generic
 +to suck news from your favourite NNTP server.
 +
 +If you are using INN (this suck is configured to be used with INN!)
@@ -132,7 +132,7 @@ diff -ruN suck-4.2.2.orig/sample/get.news.generic suck-4.2.2/sample/get.news.gen
 -BASEDIR=/home/boby/doNews		# base directory for suck rpost and scripts
 +SPOOLDIR=/var/spool/news		# base directory for articles to be rposted
 +NEWSDIR=/usr				# base directory for news binaries 
-+BASEDIR=/var/state/suck			# base directory for suck rpost and scripts
++BASEDIR=/var/lib/suck			# base directory for suck rpost and scripts
  
  SHLOCK=${NEWSDIR}/bin/shlock
  
@@ -161,7 +161,7 @@ diff -ruN suck-4.2.2.orig/sample/get.news.inn suck-4.2.2/sample/get.news.inn
 -BASEDIR=/home/boby/doNews		# base directory for scripts and data files
 +SPOOLDIR=/var/spool/news		# base directory for articles to be rposted
 +NEWSDIR=/usr				# base directory for news binaries 
-+BASEDIR=/var/state/suck			# base directory for scripts and data files
++BASEDIR=/var/lib/suck			# base directory for scripts and data files
  
  CTLINND=${NEWSDIR}/bin/ctlinnd		# location of binary
  SHLOCK=${NEWSDIR}/bin/shlock		# location of binary
@@ -409,8 +409,8 @@ diff -ruN suck-4.2.2.orig/suck_config.h suck-4.2.2/suck_config.h
  
 -#define N_PHRASES "/usr/local/lib/suck.phrases"	/* default location for phrase file */
 -#define HISTORY_FILE "/usr/news/db/history"     /* default location for history file */
-+#define N_PHRASES "/var/state/suck/suck.phrases"	/* default location for phrase file */
-+#define HISTORY_FILE "/var/state/news/history"   /* default location for history file */
++#define N_PHRASES "/var/lib/suck/suck.phrases"	/* default location for phrase file */
++#define HISTORY_FILE "/var/lib/news/history"   /* default location for history file */
  
  /* TEMP FILES created */
  #define N_NEWRC "suck.newrc"

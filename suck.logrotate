@@ -2,6 +2,6 @@
     create 644 news news
 }
 
-/var/state/suck/suck.killlog {
+/var/lib/suck/suck.killlog {
     create 644 news news
 }
