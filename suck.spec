@@ -17,7 +17,7 @@ BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	inn-devel >= 2.0
 BuildRequires:	openssl-devel >= 0.9.7
-#BuildRequires:	perl-devel >= 5.8.0
+BuildRequires:	perl-devel >= 5.8.0
 Requires:	inn-libs >= 2.0
 Provides:	news-sucker
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
