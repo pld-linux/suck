@@ -9,17 +9,11 @@
 
 SPOOLDIR=/var/spool/news	# base directory for articles to be rposted
 NEWSDIR=/usr			# base directory for news binaries 
-BASEDIR=/var/lib/suck		# base directory for scripts and data files
 
 CTLINND=${NEWSDIR}/bin/ctlinnd	# location of binary
 SHLOCK=${NEWSDIR}/bin/shlock	# location of binary
 
-TMPDIR=${BASEDIR}		# location for suck.* files
-MSGDIR=${BASEDIR}/Msgs		# where to put MultiFile messages when 
-				# getting them
-
 OUTFILE=/tmp/tmp$$			# used by rpost as article after it is filtered
-LOCKFILE=${BASEDIR}/getnews.lock	# lock file to prevent multiple instances of script
 NEWSGROUP=news				# which group owns the file in
 					# outgoing, typically either news or 
 					# uucp.
@@ -27,7 +21,6 @@ TESTHOST=testhost
 SUCK=suck
 
 # for INN 2.x with Storage API use:
-SCRIPT=${BASEDIR}/put.news.sm		# my filter for rpost
 RPOST=rpost				# rpost command
 # for INN <2.3 without storage API use:
 #SCRIPT=${BASEDIR}/put.news		# my filter for rpost
@@ -48,10 +41,17 @@ VIA_HOST=
 VIA_PORT=
 VIA_USER=	
 USE_MODEREADER=
+BASEDIR=/tmp
 
 # read config from file:
 
 . $CONFIG_FILE
+
+LOCKFILE=${BASEDIR}/getnews.lock	# lock file to prevent multiple instances of script
+SCRIPT=${BASEDIR}/put.news.sm		# my filter for rpost
+TMPDIR=${BASEDIR}		# location for suck.* files
+MSGDIR=${BASEDIR}/Msgs		# where to put MultiFile messages when 
+				# getting them
 
 OUTGOING=${SPOOLDIR}/outgoing/${SITE}	# location of the list of articles 
 					# to upload
@@ -67,7 +67,7 @@ if [ $? -ne 0 ]; then
 fi
 
 
-if [ ${VIA_SSH} -eq "yes" ]; then
+if [ ${VIA_SSH} == "yes" ]; then
 	
 	su $VIA_USER -c "ssh -f -C -L $VIA_PORT:news.mimuw.edu.pl:119 \
 	-l $VIA_USER $VIA_HOST sleep 120"
@@ -79,7 +79,7 @@ ${TESTHOST} ${LOCAL_HOST} -s ${USE_MODEREADER}
 LOCAL_RESULT=0
 
 # is the remote host up and running so we can download messages?
-if [ ${VIA_SSH} -eq "yes" ]; then
+if [ ${VIA_SSH} == "yes" ]; then
 	${TESTHOST} localhost -N $VIA_PORT -s ${USE_MODEREADER}
 	REMOTE_RESULT=$?
 else
@@ -90,7 +90,7 @@ fi
 if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
 	{
 		# download messages
-		if [ ${VIA_SSH} -eq "yes" ]; then
+		if [ ${VIA_SSH} == "yes" ]; then
 			${SUCK} localhost -N $VIA_PORT -c -A -bp -hl ${LOCAL_HOST} -dt ${TMPDIR} -dm ${MSGDIR} -dd ${BASEDIR} ${USE_MODEREADER} -i 500
 		SUCK_STATUS=$?
 		else
@@ -115,7 +115,7 @@ if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
 		# upload messages
 		if [ -s ${OUTGOING}  -o -s ${OUTGOINGNEW} ]; then
 
-			if [ ${VIA_SSH} -eq "yes" ]; then
+			if [ ${VIA_SSH} == "yes" ]; then
 				${TESTHOST} localhost -N $VIA_PORT -s
 				RESULT=$?
 			else
@@ -144,7 +144,7 @@ if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
 				fi
 
 	# outgoing messages to post
-				if [ ${VIA_SSH} -eq "yes" ]; then
+				if [ ${VIA_SSH} == "yes" ]; then
 					${RPOST} localhost -N ${VIA_PORT} ${USE_MODEREADER} -d -b ${OUTGOINGNEW} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
 				ERRLEV=$?
 				else			
