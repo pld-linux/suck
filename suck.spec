@@ -113,7 +113,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc {CHANGELOG,CONTENTS,README,README.Gui,README.Xover,README.FIRST}.gz
 %doc sample perl
 
-%attr(755,root,root) /usr/bin/*
+%attr(755,root,root) %{_bindir}/*
 %config /etc/logrotate.d/suck
 
 %attr(775,news,news) %dir /var/state/suck
