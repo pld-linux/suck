@@ -1,10 +1,9 @@
-# TODO: update PLD patch
 %include	/usr/lib/rpm/macros.perl
 Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.3.1
-Release:	1.1
+Release:	2
 License:	Public Domain
 Group:		Networking/News
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
@@ -18,7 +17,7 @@ BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	inn-devel >= 2.0
 BuildRequires:	openssl-devel >= 0.9.7
-BuildRequires:	perl-devel >= 5.6.1
+BuildRequires:	perl-devel >= 5.8.0
 Requires:	inn-libs >= 2.0
 Provides:	news-sucker
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -47,7 +46,7 @@ zainstalowaniu tego pakietu!
 
 %prep
 %setup -q
-#%patch0 -p1
+%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
@@ -55,6 +54,7 @@ zainstalowaniu tego pakietu!
 %build
 %{__aclocal}
 %{__autoconf}
+CPPFLAGS="-D_GNU_SOURCE"
 %configure
 
 # workaround for stupid inn 2.3 headers
@@ -63,7 +63,8 @@ cat >> config.h <<EOF
 #define OFFSET_T off_t
 EOF
 
-%{__make}
+%{__make} \
+	PERL_LIB="-lperl -lm -lcrypt -lpthread"
 
 %install
 rm -rf $RPM_BUILD_ROOT
