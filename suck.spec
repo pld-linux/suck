@@ -54,7 +54,7 @@ PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
 PERL_LIB_PLD="`perl -MExtUtils::Embed -e ldopts | tail -1`"
 export PERL_CORE_PLD PERL_LIB_PLD
 aclocal
-autoconf
+%{__autoconf}
 %configure
 
 # workaround for stupid inn 2.3 headers
