@@ -3,7 +3,7 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.2.5
-Release:	2
+Release:	3
 LIcense:	Public Domain
 Group:		Networking/News
 Group(de):	Netzwerkwesen/News
@@ -53,6 +53,8 @@ zainstalowaniu tego pakietu!
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
 PERL_LIB_PLD="`perl -MExtUtils::Embed -e ldopts | tail -1`"
 export PERL_CORE_PLD PERL_LIB_PLD
+aclocal
+autoconf
 %configure
 
 # workaround for stupid inn 2.3 headers
