@@ -13,7 +13,14 @@ NEWSDIR=/usr			# base directory for news binaries
 CTLINND=${NEWSDIR}/bin/ctlinnd	# location of binary
 SHLOCK=${NEWSDIR}/bin/shlock	# location of binary
 
-OUTFILE=/tmp/tmp$$			# used by rpost as article after it is filtered
+MYTMPDIR="`mktemp -d ${TMPDIR-/tmp}/suckXXXXXX`"
+
+if [ -z "$MYTMPDIR" -o ! -d "$MYTMPDIR" ]; then
+	echo "Cannot make temporary directory - aborting."
+	exit 1
+fi
+
+OUTFILE="${MYTMPDIR}/outfile"		# used by rpost as article after it is filtered
 NEWSGROUP=news				# which group owns the file in
 					# outgoing, typically either news or 
 					# uucp.
@@ -41,7 +48,7 @@ VIA_HOST=
 VIA_PORT=
 VIA_USER=	
 USE_MODEREADER=
-BASEDIR=/tmp
+BASEDIR="$MYTMPDIR"
 
 # read config from file:
 
@@ -59,10 +66,11 @@ OUTGOINGNEW=${OUTGOING}.new		# file to contain the list temporarily
 OUTGOINGFAIL=${OUTGOINGNEW}.fail	# file with failed xfers
 
 # if we are already running, abort 
-trap 'rm -f ${LOCKFILE} ; echo "Aborting" ; exit 1' 1 2 3 15
+trap 'rm -rf "${LOCKFILE}" "${MYTMPDIR}" ; echo "Aborting" ; exit 1' 1 2 3 15
 ${SHLOCK} -p $$ -f ${LOCKFILE}
 if [ $? -ne 0 ]; then
 	echo "Already running, can't run two at one time"
+	rm -rf "${MYTMPDIR}"
 	exit
 fi
 
@@ -154,7 +162,7 @@ if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
 
 				if [ ${ERRLEV} -eq 0 ]; then
 					echo "Remotely posted articles"
-					rm ${OUTFILE}
+					rm "${OUTFILE}"
 				elif [ ${ERRLEV} -eq 1 ]; then
 					echo "Error posting a message"
 				elif [ ${ERRLEV} -eq 2 ]; then
@@ -184,4 +192,5 @@ rm -f ${LOCKFILE}
 echo "File $CONFIG_FILE processed"
 
 done
+	rm -rf "${MYTMPDIR}"
 	echo "You can hang up the modem now"
