@@ -1,0 +1,17 @@
+#BEFORE USING - check to ensure all the paths defined below are correct!!
+#
+# Config file for sucking news from news.uw.edu.pl through ssh tunnel 
+# to host named ghost
+
+REMOTE_HOST=news.mimuw.edu.pl
+SITE=news.mimuw.edu.pl			# name of site from newsfeeds file
+LOCAL_HOST=localhost
+
+#for tunneling w/ ssh:
+VIA_SSH=yes
+VIA_HOST=zodiac.mimuw.edu.pl	# you must have a ssh-accessible account there
+VIA_PORT=51234			# local port (should be free from daemons)
+VIA_USER=adasir			# username/account you are using here (to store
+				# ssh keys) and there.
+USE_MODEREADER="-M"	# some (most) sites will require a 'mode reader' before
+			# reading/posting
