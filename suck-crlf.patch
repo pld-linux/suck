@@ -5,7 +5,7 @@
  						}
  						
 -						longline = ( len - 1 == '\n' ) ? TRUE : FALSE ;
-+						longline = ( linein[len-1] == '\n' ) ? TRUE : FALSE ;
++						longline = ( linein[len-1] != '\n' ) ? TRUE : FALSE ;
  						if(longline == FALSE) {
  							/* replace nl with cr nl */
  							strncpy(&linein[len-1], "\r\n", 3);
