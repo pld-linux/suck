@@ -24,7 +24,6 @@ Provides:	news-sucker
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_localstatedir	/var/lib/suck
-%define		_sysconfdir	/etc
 
 %description
 The primary use for suck is to feed a local INN or CNEWS server,
@@ -72,7 +71,8 @@ rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_localstatedir},/etc/logrotate.d} \
 	$RPM_BUILD_ROOT/var/log
 
-%{__make} installall DESTDIR=$RPM_BUILD_ROOT
+%{__make} installall \
+	DESTDIR=$RPM_BUILD_ROOT
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
 install sample/put.news \
