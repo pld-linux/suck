@@ -64,7 +64,7 @@ rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_localstatedir},%{_sysconfdir}/logrotate.d} \
 	$RPM_BUILD_ROOT/var/log
 
-make installall DESTDIR=$RPM_BUILD_ROOT
+%{__make} installall DESTDIR=$RPM_BUILD_ROOT
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
 install sample/get.news.inn \
