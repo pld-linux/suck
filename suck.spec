@@ -2,9 +2,9 @@
 Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
-Version:	4.2.3
-Release:	3
-Copyright:	Public Domain
+Version:	4.2.4
+Release:	1
+LIcense:	Public Domain
 Group:		Networking/News
 Group(pl):	Sieciowe/News
 Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
