@@ -8,11 +8,7 @@ Group:		Networking/News
 Group(pl):	Sieciowe/News
 Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
 Source1:	suck.log
-Patch0:		suck-config.patch
-Patch1:		suck-script.patch
-Patch2:		suck-perl_int.patch
-Patch3:		suck-scripts.patch
-Patch4:		suck-readme.patch
+Patch0:		%{name}-PLD.patch
 Provides:	news-sucker
 Requires:	inn >= 2.0
 Requires:	gawk
@@ -43,11 +39,7 @@ tego pakietu!
 
 %prep
 %setup -q
-%patch0 -p0
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
+%patch0 -p1
 
 %build
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
