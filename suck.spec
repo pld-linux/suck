@@ -15,7 +15,7 @@ Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 Patch2:		%{name}-perl-5.6.patch
 URL:		http://home.att.net/~bobyetman/
-BuildRequires:	perl >= 5.6
+BuildRequires:	perl-devel >= 5.6.1
 BuildRequires:	inn-devel >= 2.0
 Requires:	inn-libs >= 2.0
 Provides:	news-sucker
