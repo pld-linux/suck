@@ -1,22 +1,24 @@
-Summary:     suck receives/sends news via NNTP
-Summary(pl): suck odbiera i wysy³a newsy przez NNTP
-Name:        suck
-Version:     3.10.2
-Release:     1
-Copyright:   Public Domain
-Group:       Networking/News
-Source:      http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
-Source1:     suck-README.FIRST
-Source2:     suck.log
-Patch0:      suck-3.10.1.make.diff
-Patch1:      suck-3.9.2.script.diff
-Patch2:      suck-3.9.2.config.diff
-Patch3:      suck-perl_int.patch
-Patch4:      suck-scripts.patch
-Provides:    news-sucker
-Requires:    inn < 2.0, gawk, perl = 5.005_02
+Summary:	suck receives/sends news via NNTP
+Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
+Name:		suck
+Version:	4.1.2
+Release:	1
+Copyright:	Public Domain
+Group:		Networking/News
+Group(pl):	Sieciowe/News
+Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
+Source1:	suck.log
+Source2:	suck-README.FIRST.tar.gz
+Patch0:		suck-makefile.patch
+Patch1:		suck-script.patch
+Patch2:		suck-config.patch
+#Patch3:	suck-perl_int.patch
+Provides:	news-sucker
+Requires:	inn >= 2.0
+%requires_pkg   perl
+%requires_pkg   gawk
 URL:         http://home.att.net/~bobyetman/index.html
-BuildRoot:   /tmp/%{name}-%{version}
+BuildRoot:   /tmp/%{name}-%{version}-root
 
 %description
 The primary use for suck is to feed a local INN or CNEWS server, without
@@ -38,34 +40,36 @@ tego pakietu!
 
 %prep
 %setup -q
-cp $RPM_SOURCE_DIR/suck-README.FIRST README.FIRST
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %build
+PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
+export PERL_CORE_PLD
+
 CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" \
-  ./configure --prefix=$RPM_BUILD_ROOT/usr
-make PERL_CORE=/usr/lib/perl5/5.00502/i386-linux-thread/CORE \
-  PERL_LIB="-lperl -lcrypt -lm -lpthread"
+./configure \
+	--prefix=$RPM_BUILD_ROOT/usr
+
+make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/etc/logrotate.d \
-           $RPM_BUILD_ROOT/var/lib/suck
-make install
-install $RPM_SOURCE_DIR/suck.log \
-        $RPM_BUILD_ROOT/etc/logrotate.d/suck
-install sample/get.news.innxmit \
-        sample/get.news.rnews \
-        sample/put.news \
-	$RPM_BUILD_ROOT/var/lib/suck
-install sample/sucknewsrc.sample \
-        $RPM_BUILD_ROOT/var/lib/suck/sucknewsrc
+install -d $RPM_BUILD_ROOT/{etc/logrotate.d,var/lib/suck}
 
-gzip -9nf $RPM_BUILD_ROOT/usr/man/man1/*
+make install prefix=$RPM_BUILD_ROOT/usr
+
+install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/suck
+install sample/get.news.inn \
+        sample/get.news.generic \
+        sample/put.news \
+	sample/put.news.sm \
+	$RPM_BUILD_ROOT/var/lib/suck
+install sample/sucknewsrc.sample $RPM_BUILD_ROOT/var/lib/suck/sucknewsrc
+
+gzip -9nf $RPM_BUILD_ROOT/usr/man/man1/* \
+	CHANGELOG CONTENTS README README.Gui README.Xover
 
 %post 
 if [ "$1" = 1 ]; then
@@ -96,18 +100,37 @@ fi
 rm -rf $RPM_BUILD_ROOT
 
 %files
-%defattr(644, root, root, 755)
-%doc README.FIRST CHANGELOG CONTENTS README README.Gui README.Xover sample
-%attr(775, news, news) %dir /var/lib/suck
+%defattr(644,root,root,755)
+%doc {CHANGELOG,CONTENTS,README,README.Gui,README.Xover}.gz
+%doc sample
+
+%attr(755,root,root) /usr/bin/*
 %config /etc/logrotate.d/suck
-%config %attr(740, news, news) /var/lib/suck/get.news.innxmit
-%config %attr(740, news, news) /var/lib/suck/get.news.rnews
-%config %attr(740, news, news) /var/lib/suck/put.news
-%config %attr(644, news, news) /var/lib/suck/sucknewsrc
-%attr(755, root, root) /usr/bin/*
-%attr(644, root,  man) /usr/man/man1/*
+
+%attr(775,news,news) %dir /var/lib/suck
+%config %attr(740,news,news) /var/lib/suck/get.news.inn
+%config %attr(740,news,news) /var/lib/suck/get.news.generic
+%config %attr(740,news,news) /var/lib/suck/put.news
+%config %attr(740,news,news) /var/lib/suck/put.news.sm
+%config %attr(644,news,news) /var/lib/suck/sucknewsrc
+
+/usr/man/man1/*
 
 %changelog
+* Thu Apr 15 1999 Piotr Czerwiñski <pius@pld.org.pl>
+  [4.1.2-1]
+- updated to 4.1.2,
+- added Group(pl),
+- changed Buildroot to /tmp/%{name}-%{version}-root,
+- removed man group from man pages,
+- patches rewritten for new version,
+- added detection of PERL_CORE directory,
+- many changes in %build, %install and %files,
+- added gzipping documentation,
+- added Requires: inn >= 2.0,
+- added some %requires_pkg macros,
+- cosmetics.
+
 * Sat Nov 28 1998 Marcin 'Qrczak' Kowalczyk <qrczak@knm.org.pl>
   [3.10.2-1]
 - PERL_CORE path changed to /usr/lib/perl5/5.00502/i386-linux-thread/CORE,
