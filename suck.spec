@@ -2,19 +2,18 @@
 Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
-Version:	4.2.4
-Release:	3
+Version:	4.2.5
+Release:	1
 LIcense:	Public Domain
 Group:		Networking/News
 Group(de):	Netzwerkwesen/News
 Group(pl):	Sieciowe/News
-Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
+Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
+#http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
 Source1:	%{name}.logrotate
 Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 Patch2:		%{name}-perl-5.6.patch
-Patch3:		%{name}-crlf.patch
-Patch4:		%{name}-inn-sm.patch
 URL:		http://home.att.net/~bobyetman/
 BuildRequires:	perl >= 5.6
 BuildRequires:	inn-devel >= 2.0
@@ -51,8 +50,6 @@ zainstalowaniu tego pakietu!
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %build
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
@@ -61,9 +58,8 @@ export PERL_CORE_PLD PERL_LIB_PLD
 %configure
 
 # workaround for stupid inn 2.3 headers
-echo -e '#define HAVE_STRDUP\n#define HAVE_STRSPN' >> config.h
+#echo -e '#define HAVE_STRDUP\n#define HAVE_STRSPN' >> config.h
 echo -e '#define BOOL int\n#define OFFSET_T off_t' >> config.h
-echo '#define DO_TAGGED_HASH 1' >> config.h
 
 %{__make}
 
