@@ -17,7 +17,7 @@ URL:		http://www.sucknews.org/index.html
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	inn-devel >= 2.0
-BuildRequires:	openssl-devel >= 0.9.7
+BuildRequires:	openssl-devel >= 0.9.7c
 BuildRequires:	perl-devel >= 5.8.0
 Requires:	inn-libs >= 2.0
 Provides:	news-sucker
