@@ -42,10 +42,3 @@
  
  installall: install install_lpost
  
-@@ -281,4 +281,4 @@
- 	mv /usr/src/packages/SRPMS/*.rpm ~
- 	rm -rf /usr/src/packages/BUILD/*
- # now generate the .sig files
--	pgps -b ~/suck*.rpm ~/suck*.tar.gz
-\ No newline at end of file
-+	pgps -b ~/suck*.rpm ~/suck*.tar.gz
