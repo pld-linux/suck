@@ -49,6 +49,7 @@ VIA_PORT=
 VIA_USER=	
 USE_MODEREADER=
 BASEDIR="$MYTMPDIR"
+READ_ONLY=no
 
 # read config from file:
 
@@ -119,6 +120,8 @@ if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
 		fi
 	} &
 
+	# check if we would like to post there...
+	if [ ${READ_ONLY} != "yes" ]; then
 	{
 		# upload messages
 		if [ -s ${OUTGOING}  -o -s ${OUTGOINGNEW} ]; then
