@@ -1,8 +1,8 @@
 Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
-Version:	4.2.0
-Release:	2
+Version:	4.2.1
+Release:	1
 Copyright:	Public Domain
 Group:		Networking/News
 Group(pl):	Sieciowe/News
@@ -28,7 +28,8 @@ the remote NNTP feeding you articles.  It is designed for a small, partial
 news feed.  It is NOT designed to feed 10,000 groups and 3 Gigs of articles
 a day.
 
-Read /usr/doc/%{name}-%{version}/README.FIRST after installing this package!
+Read /usr/share/doc/%{name}-%{version}/README.FIRST after installing 
+this package!
 
 %description -l pl
 suck dostarcza posty lokalnemu serwerowi newsów, INN-owi albo CNEWS-owi,
@@ -37,12 +38,12 @@ konfiguracji feedu z tamtej strony. Jest przeznaczony do ma³ego,
 czê¶ciowego feedu. Nie jest przeznaczony dla 10000 grup i 3 GB postów
 dziennie.
 
-Przeczytaj /usr/doc/%{name}-%{version}/README.FIRST po zainstalowaniu
+Przeczytaj /usr/share/doc/%{name}-%{version}/README.FIRST po zainstalowaniu
 tego pakietu!
 
 %prep
 %setup -q
-%patch0 -p1
+%patch0 -p0
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
@@ -60,19 +61,19 @@ make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/{etc/logrotate.d,var/state/suck}
+install -d $RPM_BUILD_ROOT/{etc/logrotate.d,var/state/%{name}}
 
 make installall prefix=$RPM_BUILD_ROOT%{_prefix}
 
-install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/suck
+install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
 install sample/get.news.inn \
 	sample/get.news.generic \
 	sample/put.news \
 	sample/put.news.sm \
 	sample/*.pl \
-	$RPM_BUILD_ROOT/var/state/suck
+	$RPM_BUILD_ROOT/var/state/%{name}
 install sample/sucknewsrc.sample \
-	$RPM_BUILD_ROOT/var/state/suck/sucknewsrc
+	$RPM_BUILD_ROOT/var/state/%{name}/sucknewsrc
 
 gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/* \
 	CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST \
@@ -81,26 +82,26 @@ gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/* \
 %post 
 if [ "$1" = 1 ]; then
   # Create initial log files so that logrotate doesn't complain
-  touch /var/log/suck.errlog
-  chown news.news /var/log/suck.errlog
-  chmod 644 /var/log/suck.errlog
-  touch /var/state/suck/suck.killlog
-  chown news.news /var/state/suck/suck.killlog
-  chmod 644 /var/state/suck/suck.killlog
+  touch /var/log/%{name}.errlog
+  chown news.news /var/log/%{name}.errlog
+  chmod 644 /var/log/%{name}.errlog
+  touch /var/state/%{name}/%{name}.killlog
+  chown news.news /var/state/%{name}/%{name}.killlog
+  chmod 644 /var/state/%{name}/%{name}.killlog
 fi
 
 %preun
 if [ "$1" = 0 ]; then
   # Remove current killfile log, or rpm -e will complain dir isn't empty
-  rm -f /var/state/suck/suck.killlog*
+  rm -f /var/state/%{name}/%{name}.killlog*
 fi
 
 %postun
 if [ "$1" = 0 ]; then
   # Remove suck error logs
-  rm -f /var/log/suck.errlog*
+  rm -f /var/log/%{name}.errlog*
   # Remove any old killfile logs rotated to /var/log
-  rm -f /var/log/suck.killlog*
+  rm -f /var/log/%{name}.killlog*
 fi
 
 %clean
@@ -112,20 +113,25 @@ rm -rf $RPM_BUILD_ROOT
 %doc sample perl
 
 %attr(755,root,root) %{_bindir}/*
-%config /etc/logrotate.d/suck
+%config /etc/logrotate.d/%{name}
 
-%attr(775,news,news) %dir /var/state/suck
+%attr(775,news,news) %dir /var/state/%{name}
 
-%config %attr(740,news,news) /var/state/suck/get.news.inn
-%config %attr(740,news,news) /var/state/suck/get.news.generic
-%config %attr(740,news,news) /var/state/suck/put.news
-%config %attr(740,news,news) /var/state/suck/put.news.sm
-%config %attr(740,news,news) /var/state/suck/*.pl
-%config %attr(644,news,news) /var/state/suck/sucknewsrc
+%config %attr(740,news,news) /var/state/%{name}/get.news.inn
+%config %attr(740,news,news) /var/state/%{name}/get.news.generic
+%config %attr(740,news,news) /var/state/%{name}/put.news
+%config %attr(740,news,news) /var/state/%{name}/put.news.sm
+%config %attr(740,news,news) /var/state/%{name}/*.pl
+%config %attr(644,news,news) /var/state/%{name}/sucknewsrc
 
 %{_mandir}/man1/*
 
 %changelog
+* Wed May 26 1999 Piotr Czerwiñski <pius@pld.org.pl> 
+  [4.2.1-1]
+- updated to 4.2.1,
+- added more macros.
+
 * Mon May 24 1999 Piotr Czerwiñski <pius@pld.org.pl> 
   [4.2.0-2]
 - package is FHS 2.0 compliant,
