@@ -3,7 +3,7 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.3.1
-Release:	1
+Release:	2
 License:	Public Domain
 Group:		Networking/News
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
@@ -46,7 +46,7 @@ zainstalowaniu tego pakietu!
 
 %prep
 %setup -q
-%patch0 -p1
+#%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
@@ -91,12 +91,16 @@ to
 test
 EOF
 
+mv perl/README perl/README.perl
+install -d	$RPM_BUILD_ROOT%{_examplesdir}/%{name}-%{version}
+cp -r sample/*	$RPM_BUILD_ROOT%{_examplesdir}/%{name}-%{version}
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc  CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST sample perl
+%doc  CHANGELOG CONTENTS README README.Gui README.Xover perl
 %attr(755,root,root) %{_bindir}/*
 
 %config /etc/logrotate.d/suck
@@ -112,3 +116,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %attr(640,root,root) %ghost %{_localstatedir}/suck.killlog*
 %attr(640,root,root) %ghost /var/log/*
+
+%{_examplesdir}/%{name}-%{version}
