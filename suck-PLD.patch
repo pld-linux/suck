@@ -171,8 +171,8 @@ diff -Nur suck-4.3.2.orig/sample/get.news.generic suck-4.3.2/sample/get.news.gen
  				echo "Error remote posting"
 diff -Nur suck-4.3.2.orig/sample/get.news.inn suck-4.3.2/sample/get.news.inn
 --- suck-4.3.2.orig/sample/get.news.inn	Sat Sep 27 09:29:59 1997
-+++ suck-4.3.2/sample/get.news.inn	Mon Mar 31 22:30:30 2003
-@@ -5,12 +5,13 @@
++++ suck-4.3.2/sample/get.news.inn	Sun Oct 26 20:30:30 2003
+@@ -5,33 +5,51 @@
  #NOTE: this script probably needs to be run by root.  Most systems will
  # not let a normal user run ctlinnd 
  
@@ -184,26 +184,49 @@ diff -Nur suck-4.3.2.orig/sample/get.news.inn suck-4.3.2/sample/get.news.inn
 -SPOOLDIR=/usr/spool/news		# base directory for articles to be rposted
 -NEWSDIR=/usr/lib/news			# base directory for news binaries 
 -BASEDIR=/home/boby/doNews		# base directory for scripts and data files
-+SPOOLDIR=/var/spool/news		# base directory for articles to be rposted
-+NEWSDIR=/usr				# base directory for news binaries 
-+BASEDIR=/var/lib/suck			# base directory for scripts and data files
++#for tunneling w/ ssh:
++VIA_SSH=yes
++VIA_HOST=somehost.icm.edu.pl	# you must have a ssh-accessible account there
++VIA_PORT=51234			# local port (should be free from daemons)
++VIA_USER=nntpfeed		# username/account you are using here (to store
++				# ssh keys) and there.
++
++				
++USE_MODEREADER="-M"	# some (most) sites will require a 'mode reader' before
++			# reading/posting
++
++SPOOLDIR=/var/spool/news	# base directory for articles to be rposted
++NEWSDIR=/usr			# base directory for news binaries 
++BASEDIR=/var/lib/suck		# base directory for scripts and data files
++
++CTLINND=${NEWSDIR}/bin/ctlinnd	# location of binary
++SHLOCK=${NEWSDIR}/bin/shlock	# location of binary
++
++TMPDIR=${BASEDIR}		# location for suck.* files
++MSGDIR=${BASEDIR}/Msgs		# where to put MultiFile messages when 
++				# getting them
  
- CTLINND=${NEWSDIR}/bin/ctlinnd		# location of binary
- SHLOCK=${NEWSDIR}/bin/shlock		# location of binary
-@@ -18,20 +19,23 @@
- TMPDIR=${BASEDIR}			# location for suck.* files
- MSGDIR=${BASEDIR}/Msgs			# where to put MultiFile messages when getting them
- 
+-CTLINND=${NEWSDIR}/bin/ctlinnd		# location of binary
+-SHLOCK=${NEWSDIR}/bin/shlock		# location of binary
+-
+-TMPDIR=${BASEDIR}			# location for suck.* files
+-MSGDIR=${BASEDIR}/Msgs			# where to put MultiFile messages when getting them
+-
 -SITE=pixi				# name of site from newsfeeds file
 -
- OUTGOING=${SPOOLDIR}/out.going/${SITE}	# location of the list of articles to upload
+-OUTGOING=${SPOOLDIR}/out.going/${SITE}	# location of the list of articles to upload
++OUTGOING=${SPOOLDIR}/outgoing/${SITE}	# location of the list of articles 
++					# to upload
  OUTGOINGNEW=${OUTGOING}.new		# file to contain the list temporarily
  OUTGOINGFAIL=${OUTGOINGNEW}.fail	# file with failed xfers
 -SCRIPT=${BASEDIR}/put.news		# my filter for rpost
  OUTFILE=/tmp/tmp$$			# used by rpost as article after it is filtered
  LOCKFILE=${BASEDIR}/getnews.lock	# lock file to prevent multiple instances of script
- NEWSGROUP=news				# which group owns the file in out.going, typically either news or uucp.
- 
+-NEWSGROUP=news				# which group owns the file in out.going, typically either news or uucp.
+-
++NEWSGROUP=news				# which group owns the file in
++					# outgoing, typically either news or 
++					# uucp.
  TESTHOST=testhost
 -RPOST=rpost
  SUCK=suck
@@ -218,11 +241,21 @@ diff -Nur suck-4.3.2.orig/sample/get.news.inn suck-4.3.2/sample/get.news.inn
  # if we are already running, abort 
  
  trap 'rm -f ${LOCKFILE} ; echo "Aborting" ; exit 1' 1 2 3 15
-@@ -50,73 +54,78 @@
- REMOTE_RESULT=$?
+@@ -41,82 +59,116 @@
+ 	exit
+ fi
  
- if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
--	
+-# is the local host up and running so we can post messages we download?
+-${TESTHOST} ${LOCAL_HOST} -s
+-LOCAL_RESULT=$?
+ 
+-# is the remote host up and running so we can download messages?
+-${TESTHOST} ${REMOTE_HOST} -s
+-REMOTE_RESULT=$?
+-
+-if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
++if [ ${VIA_SSH} -eq "yes" ]; then
+ 	
 -	# download messages
 -	${SUCK} ${REMOTE_HOST} -c -A -bp -hl ${LOCAL_HOST} -dt ${TMPDIR} -dm ${MSGDIR} -dd ${BASEDIR}
 -	SUCK_STATUS=$?
@@ -238,15 +271,36 @@ diff -Nur suck-4.3.2.orig/sample/get.news.inn suck-4.3.2/sample/get.news.inn
 -	elif [ ${SUCK_STATUS} -eq -1 ]; then
 -		echo "General failure"
 -	fi
--
++	su $VIA_USER -c "ssh -f -C -L $VIA_PORT:news.mimuw.edu.pl:119 \
++	-l $VIA_USER $VIA_HOST sleep 120"
+ 
 -	# now upload messages
 -	if [ -s ${OUTGOING}  -o -s ${OUTGOINGNEW} ]; then
--
++fi
+ 
 -		${TESTHOST} ${REMOTE_HOST} -s
--
++# is the local host up and running so we can post messages we download?
++${TESTHOST} ${LOCAL_HOST} -s ${USE_MODEREADER}
++LOCAL_RESULT=0
+ 
 -		if [ $? -ne 0 ]; then
 -			echo "Remote posting host not responding"
--		else
++# is the remote host up and running so we can download messages?
++if [ ${VIA_SSH} -eq "yes" ]; then
++	${TESTHOST} localhost -N $VIA_PORT -s ${USE_MODEREADER}
++	REMOTE_RESULT=$?
++else
++	${TESTHOST} ${REMOTE_HOST} -s
++	REMOTE_RESULT=$?
++fi	
++
++if [ ${REMOTE_RESULT} -eq 0 -a ${LOCAL_RESULT} -eq 0 ]; then
++	{
++		# download messages
++		if [ ${VIA_SSH} -eq "yes" ]; then
++			${SUCK} localhost -N $VIA_PORT -c -A -bp -hl ${LOCAL_HOST} -dt ${TMPDIR} -dm ${MSGDIR} -dd ${BASEDIR} ${USE_MODEREADER} -i 500
++		SUCK_STATUS=$?
+ 		else
 -			# this is needed by INND so that the outgoing file will be
 -			# properly flushed and we have a new blank file to work with
 -			# when we are done
@@ -263,14 +317,12 @@ diff -Nur suck-4.3.2.orig/sample/get.news.inn suck-4.3.2/sample/get.news.inn
 -				mv ${OUTGOING} ${OUTGOINGNEW}
 -				${CTLINND} flush ${SITE}
 -			fi
--
++			${SUCK} ${REMOTE_HOST} -c -A -bp -hl ${LOCAL_HOST} -dt ${TMPDIR} -dm ${MSGDIR} -dd ${BASEDIR}
++		SUCK_STATUS=$?
++		fi
+ 
 -			# outgoing messages to post
 -			${RPOST} ${REMOTE_HOST} -d -b ${OUTGOINGNEW} -p ${SPOOLDIR} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
-+	{
-+		# download messages
-+		${SUCK} ${REMOTE_HOST} -c -A -bp -hl ${LOCAL_HOST} -dt ${TMPDIR} -dm ${MSGDIR} -dd ${BASEDIR}
-+		SUCK_STATUS=$?
-+
 +		if [ ${SUCK_STATUS} -eq 0 ]; then
 +			echo "Downloaded Articles"
 +		elif [ ${SUCK_STATUS} -eq 1 ]; then
@@ -300,32 +352,43 @@ diff -Nur suck-4.3.2.orig/sample/get.news.inn suck-4.3.2/sample/get.news.inn
 +		# upload messages
 +		if [ -s ${OUTGOING}  -o -s ${OUTGOINGNEW} ]; then
 +
-+			${TESTHOST} ${REMOTE_HOST} -s
++			if [ ${VIA_SSH} -eq "yes" ]; then
++				${TESTHOST} localhost -N $VIA_PORT -s
++				RESULT=$?
++			else
++				  ${TESTHOST} ${REMOTE_HOST} -s
++				RESULT=$?
++			fi			  
 +
-+			if [ $? -ne 0 ]; then
++			if [ $RESULT -ne 0 ]; then
 +				echo "Remote posting host not responding"
 +			else
-+				# this is needed by INND so that the outgoing file will be
-+				# properly flushed and we have a new blank file to work with
-+				# when we are done
-+				# First mv the current one to a new file name
-+				# Since innd already has the file open, it doesn't care 
-+				# about the rename.
-+				# The flush will ensure that all messages to be posted have
-+				# been written out, close off the old one (already renamed)
-+				# and create a new one.
++	# this is needed by INND so that the outgoing file will be
++	# properly flushed and we have a new blank file to work with
++	# when we are done
++	# First mv the current one to a new file name
++	# Since innd already has the file open, it doesn't care 
++	# about the rename.
++	# The flush will ensure that all messages to be posted have
++	# been written out, close off the old one (already renamed)
++	# and create a new one.
 +
-+				# if the outgoingnew already exists, it means we aborted last time
-+				# so don't try to do it again
++	# if the outgoingnew already exists, it means we aborted last time
++	# so don't try to do it again
 +				if [ ! -s ${OUTGOINGNEW} ]; then
 +					mv ${OUTGOING} ${OUTGOINGNEW}
 +					${CTLINND} flush ${SITE}
 +				fi
 +
-+				# outgoing messages to post
-+				${RPOST} ${REMOTE_HOST} -d -b ${OUTGOINGNEW} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
-+
++	# outgoing messages to post
++				if [ ${VIA_SSH} -eq "yes" ]; then
++					${RPOST} localhost -N ${VIA_PORT} ${USE_MODEREADER} -d -b ${OUTGOINGNEW} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
 +				ERRLEV=$?
++				else			
++					${RPOST} ${REMOTE_HOST} -d -b ${OUTGOINGNEW} -f \$\$o=${OUTFILE} ${SCRIPT} \$\$i ${OUTFILE}
++				ERRLEV=$?
++				fi				
++
 +				if [ ${ERRLEV} -eq 0 ]; then
 +					echo "Remotely posted articles"
 +					rm ${OUTFILE}
