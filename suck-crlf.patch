@@ -1,0 +1,11 @@
+--- suck-4.2.4/batch.c.orig	Mon Jan  3 02:43:46 2000
++++ suck-4.2.4/batch.c	Fri Feb 16 21:29:40 2001
+@@ -358,7 +358,7 @@
+ 							linein[0] = '.';
+ 						}
+ 						
+-						longline = ( len - 1 == '\n' ) ? TRUE : FALSE ;
++						longline = ( linein[len-1] == '\n' ) ? TRUE : FALSE ;
+ 						if(longline == FALSE) {
+ 							/* replace nl with cr nl */
+ 							strncpy(&linein[len-1], "\r\n", 3);

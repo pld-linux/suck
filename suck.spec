@@ -3,7 +3,7 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
 Version:	4.2.4
-Release:	2
+Release:	3
 LIcense:	Public Domain
 Group:		Networking/News
 Group(de):	Netzwerkwesen/News
@@ -13,6 +13,8 @@ Source1:	%{name}.logrotate
 Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 Patch2:		%{name}-perl-5.6.patch
+Patch3:		%{name}-crlf.patch
+Patch4:		%{name}-inn-sm.patch
 URL:		http://home.att.net/~bobyetman/
 BuildRequires:	perl >= 5.6
 BuildRequires:	inn-devel >= 2.0
@@ -49,6 +51,8 @@ zainstalowaniu tego pakietu!
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
 
 %build
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
@@ -73,28 +77,24 @@ install -d $RPM_BUILD_ROOT{%{_localstatedir},%{_sysconfdir}/logrotate.d} \
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
 install sample/put.news \
 	sample/put.news.sm \
+	sample/get.news.* \
 	sample/*.pl \
 	$RPM_BUILD_ROOT%{_localstatedir}
 install sample/sucknewsrc.sample \
 	$RPM_BUILD_ROOT%{_localstatedir}/sucknewsrc
-
-# default to put.news.sm (required for inn 2.3)
-for f in get.news.inn get.news.generic ; do
-	sed 's/^\(SCRIPT.*\)put\.news/\1put.news.sm/' \
-		< sample/$f > $RPM_BUILD_ROOT%{_localstatedir}/$f
-done
 
 touch $RPM_BUILD_ROOT/var/log/suck.errlog
 touch $RPM_BUILD_ROOT%{_localstatedir}/suck.killlog
 
 cat > $RPM_BUILD_ROOT%{_localstatedir}/active-ignore <<EOF
 control
+control.cancel
 junk
 to
 test
 EOF
 
-gzip -9nfCHANGELOG CONTENTS README README.Gui README.Xover README.FIRST \
+gzip -9nf CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST \
 	perl/README
 
 %clean
