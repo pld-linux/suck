@@ -7,6 +7,7 @@ Release:	1
 License:	Public Domain
 Group:		Networking/News
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
+# Source0-md5:	b4de28e7f256ec3c2c388b2c984f30bf
 Source1:	%{name}.logrotate
 Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
