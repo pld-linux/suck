@@ -8,7 +8,7 @@ Copyright:	Public Domain
 Group:		Networking/News
 Group(pl):	Sieciowe/News
 Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
-Source1:	suck.log
+Source1:	suck.logrotate
 Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 URL:		http://home.att.net/~bobyetman/index.html
