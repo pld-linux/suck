@@ -1,6 +1,6 @@
-diff -ruN suck-4.2.2.orig/Makefile.in suck-4.2.2/Makefile.in
---- suck-4.2.2.orig/Makefile.in	Sun Jul 25 21:09:33 1999
-+++ suck-4.2.2/Makefile.in	Mon Dec  6 08:21:47 1999
+diff -Nru suck-4.2.4/Makefile.in suck-4.2.4.new/Makefile.in
+--- suck-4.2.4/Makefile.in	Sun Aug 27 22:39:43 2000
++++ suck-4.2.4.new/Makefile.in	Sun Aug 27 22:35:41 2000
 @@ -6,8 +6,8 @@
  ############################################################################
  
@@ -21,7 +21,8 @@ diff -ruN suck-4.2.2.orig/Makefile.in suck-4.2.2/Makefile.in
  
  # Step 3: Define ONE Library that contains the functions
  # If you are using INN-2.X, and the compiler complains 
-@@ -31,11 +31,11 @@
+@@ -30,12 +30,12 @@
+ #DB_LIB=-lgdbm
  #DB_LIB=-lndbm
  #DB_LIB=-ldbz
 -#DB_LIB=-linn -lstorage	# see note above
@@ -35,7 +36,7 @@ diff -ruN suck-4.2.2.orig/Makefile.in suck-4.2.2/Makefile.in
  #DB_LIB_LOC=-L/usr/news/lib
  
  # Step 5: If you want to use embedded PERL functions as kill routines
-@@ -52,15 +52,20 @@
+@@ -53,6 +53,11 @@
  #PERL_DEFS=-DPERL_EMBED -Dbool=char -DHAS_BOOL
  #PERL_INC_LOC=-I$(PERL_CORE)
  #PERL_LIB_LOC=-L$(PERL_CORE)
@@ -45,8 +46,11 @@ diff -ruN suck-4.2.2.orig/Makefile.in suck-4.2.2/Makefile.in
 +PERL_INC_LOC=-I$(PERL_CORE)
 +PERL_LIB_LOC=-L$(PERL_CORE) -lpthread -lcrypt
  
+ # Step 6: If compiling for OS/2 uncomment the following
+ #OS2_LD=-Zexe
+@@ -67,11 +72,11 @@
  ############################################################################
- # COMPILE flags for GCC
+ # my compile stuff
  ############################################################################
 -MY_GCC_FLAGS =  -Wall -Wpointer-arith -Wcast-align -Wcast-qual \
 +MY_GCC_FLAGS =  -Wall -Wpointer-arith -Wcast-align \
@@ -57,19 +61,19 @@ diff -ruN suck-4.2.2.orig/Makefile.in suck-4.2.2/Makefile.in
 +MY_DBZ_GCC_FLAGS =  -Wall -Wpointer-arith -Wcast-align \
    -Waggregate-return -Wmissing-prototypes -Wnested-externs -Wwrite-strings \
    -Wmissing-declarations
- 
-@@ -100,7 +105,7 @@
+ ############################################################################
+@@ -109,7 +114,7 @@
  CC = @CC@
  @SET_MAKE@
  
 -CFLAGS = @CFLAGS@
 +CFLAGS = @CFLAGS@ -DHAVE_STRING_H -DHAVE_MEMORY_H
  CPPFLAGS = -I. -I$(srcdir) @CPPFLAGS@
- LDFLAGS = @LDFLAGS@ 
- DEFS = @DEFS@ -DSUCK_VERSION=\"$(VERSION)\"
-diff -ruN suck-4.2.2.orig/README.FIRST suck-4.2.2/README.FIRST
---- suck-4.2.2.orig/README.FIRST	Thu Jan  1 01:00:00 1970
-+++ suck-4.2.2/README.FIRST	Mon Dec  6 08:21:47 1999
+ LDFLAGS = @LDFLAGS@ $(DMALLOC_LD) $(OS2_LD)
+ DEFS = @DEFS@ -DSUCK_VERSION=\"$(VERSION)\" $(DMALLOC_DEFS) $(OS2_DEFS) $(DMALLOC_INC)
+diff -Nru suck-4.2.4/README.FIRST suck-4.2.4.new/README.FIRST
+--- suck-4.2.4/README.FIRST	Thu Jan  1 01:00:00 1970
++++ suck-4.2.4.new/README.FIRST	Fri Aug  4 22:28:55 2000
 @@ -0,0 +1,25 @@
 +Dear user,
 +
@@ -96,10 +100,10 @@ diff -ruN suck-4.2.2.orig/README.FIRST suck-4.2.2/README.FIRST
 +Bye,
 +    Karsten Weiss <karsten@addx.au.s.shuttle.de>
 +
-diff -ruN suck-4.2.2.orig/killprg.c suck-4.2.2/killprg.c
---- suck-4.2.2.orig/killprg.c	Tue May 11 16:36:36 1999
-+++ suck-4.2.2/killprg.c	Mon Dec  6 08:21:47 1999
-@@ -395,9 +395,12 @@
+diff -Nru suck-4.2.4/killprg.c suck-4.2.4.new/killprg.c
+--- suck-4.2.4/killprg.c	Sun Aug 27 22:39:43 2000
++++ suck-4.2.4.new/killprg.c	Fri Aug  4 22:28:55 2000
+@@ -401,9 +401,12 @@
  }
  /*--------------------------------------------------------------------------*/
  void killperl_done(PKillStruct master) {
@@ -115,9 +119,9 @@ diff -ruN suck-4.2.2.orig/killprg.c suck-4.2.2/killprg.c
  	master->killfunc=chk_msg_kill; /* restore default function */
  }
  /*----------------------------------------------------------------------------*/
-diff -ruN suck-4.2.2.orig/sample/get.news.generic suck-4.2.2/sample/get.news.generic
---- suck-4.2.2.orig/sample/get.news.generic	Sat Feb 20 00:32:57 1999
-+++ suck-4.2.2/sample/get.news.generic	Mon Dec  6 08:21:47 1999
+diff -Nru suck-4.2.4/sample/get.news.generic suck-4.2.4.new/sample/get.news.generic
+--- suck-4.2.4/sample/get.news.generic	Sun Aug 27 22:39:43 2000
++++ suck-4.2.4.new/sample/get.news.generic	Fri Aug  4 22:28:55 2000
 @@ -5,20 +5,19 @@
  #NOTE: this script probably needs to be run by root.  Most systems will
  # not let a normal user run rnews
@@ -144,9 +148,9 @@ diff -ruN suck-4.2.2.orig/sample/get.news.generic suck-4.2.2/sample/get.news.gen
  SCRIPT=${BASEDIR}/put.news		# my filter for rpost
  OUTFILE=/tmp/tmp$$			# used by rpost as article after it is filtered
  LOCKFILE=${BASEDIR}/getnews.lock	# lock file to prevent multiple instances of script
-diff -ruN suck-4.2.2.orig/sample/get.news.inn suck-4.2.2/sample/get.news.inn
---- suck-4.2.2.orig/sample/get.news.inn	Sat Sep 27 09:29:59 1997
-+++ suck-4.2.2/sample/get.news.inn	Mon Dec  6 08:21:47 1999
+diff -Nru suck-4.2.4/sample/get.news.inn suck-4.2.4.new/sample/get.news.inn
+--- suck-4.2.4/sample/get.news.inn	Sun Aug 27 22:39:43 2000
++++ suck-4.2.4.new/sample/get.news.inn	Fri Aug  4 22:28:55 2000
 @@ -5,12 +5,13 @@
  #NOTE: this script probably needs to be run by root.  Most systems will
  # not let a normal user run ctlinnd 
@@ -317,10 +321,10 @@ diff -ruN suck-4.2.2.orig/sample/get.news.inn suck-4.2.2/sample/get.news.inn
  	echo "You can hang up the modem now"
  
  fi
-diff -Nru suck-4.2.3/sample/put.news suck-4.2.3.new/sample/put.news
---- suck-4.2.3/sample/put.news	Mon Jan 17 14:56:25 2000
-+++ suck-4.2.3.new/sample/put.news	Mon Feb 28 08:59:21 2000
-@@ -1,35 +1,10 @@
+diff -Nru suck-4.2.4/sample/put.news suck-4.2.4.new/sample/put.news
+--- suck-4.2.4/sample/put.news	Sun Aug 27 22:39:43 2000
++++ suck-4.2.4.new/sample/put.news	Sun Aug 27 22:37:21 2000
+@@ -1,34 +1,10 @@
  #!/bin/sh
  
 -# this is just a simple script to use sed to strip off the 
@@ -337,15 +341,14 @@ diff -Nru suck-4.2.3/sample/put.news suck-4.2.3.new/sample/put.news
 -	exit -1
 -fi
 -
--SEDCMD="/^NNTP-Posting/d"
+-SEDCMD="/^NNTP-Posting-Host/d"
 -SEDCMD2="/^Xref/d"
--SEDCMD3="/^X-/d"
 -OUTFILE=$2
 -INFILE=$1
 -
 -if [ -f ${INFILE} ]; then
 -
--	sed -e ${SEDCMD} ${INFILE} | sed -e ${SEDCMD2} | sed -e ${SEDCMD3} > ${OUTFILE}
+-	sed -e ${SEDCMD} ${INFILE} | sed -e ${SEDCMD2} > ${OUTFILE}
 -		
 -	if [ $? -ne 0 ]; then
 -		echo "Error"
@@ -364,10 +367,10 @@ diff -Nru suck-4.2.3/sample/put.news suck-4.2.3.new/sample/put.news
 +	/^$/ {body = 1}
 +	body || !/^(NNTP-Posting-Host|Xref):/
 +' $1 >$2
-diff -ruN suck-4.2.2.orig/sample/put.news.sm suck-4.2.2/sample/put.news.sm
---- suck-4.2.2.orig/sample/put.news.sm	Tue Dec  1 02:05:52 1998
-+++ suck-4.2.2/sample/put.news.sm	Mon Dec  6 08:23:51 1999
-@@ -6,19 +6,7 @@
+diff -Nru suck-4.2.4/sample/put.news.sm suck-4.2.4.new/sample/put.news.sm
+--- suck-4.2.4/sample/put.news.sm	Sun Aug 27 22:39:43 2000
++++ suck-4.2.4.new/sample/put.news.sm	Sun Aug 27 22:37:50 2000
+@@ -6,21 +6,7 @@
  # It is set up for INND using CNFS, so it uses the sm command
  # to get the actual article
  
@@ -386,14 +389,16 @@ diff -ruN suck-4.2.2.orig/sample/put.news.sm suck-4.2.2/sample/put.news.sm
 -		echo "Error"
 -		exit -1
 -	fi
+-
+-	rm ${TMPFILE}
 -fi
 +/usr/bin/sm $1 | awk '
 +    /^$/ {body = 1}
 +    body || !/^(NNTP-Posting-Host|NNTP-Posting-Date|X-Trace|X-Complaints-To|Xref):/
 +    ' > $2
-diff -ruN suck-4.2.2.orig/suck_config.h suck-4.2.2/suck_config.h
---- suck-4.2.2.orig/suck_config.h	Sat May 15 23:26:59 1999
-+++ suck-4.2.2/suck_config.h	Mon Dec  6 08:21:47 1999
+diff -Nru suck-4.2.4/suck_config.h suck-4.2.4.new/suck_config.h
+--- suck-4.2.4/suck_config.h	Sun Aug 27 22:39:43 2000
++++ suck-4.2.4.new/suck_config.h	Sun Aug 27 22:36:30 2000
 @@ -66,7 +66,7 @@
  
  /* FULL PATH of error log used if -e option specifed to any of the programs */
@@ -406,11 +411,11 @@ diff -ruN suck-4.2.2.orig/suck_config.h suck-4.2.2/suck_config.h
 @@ -91,8 +91,8 @@
  #define N_LMOVE_CONFIG  "lmove-config"          /* config file for lmove */
  #define N_XOVER         "suckxover"             /* parameter file for which articles NOT to download via xover */
- 
+ #define N_NODOWNLOAD    "sucknodownload"        /* file name for message-ids that I never download */
 -#define N_PHRASES "/usr/local/lib/suck.phrases"	/* default location for phrase file */
 -#define HISTORY_FILE "/usr/news/db/history"     /* default location for history file */
-+#define N_PHRASES "/var/lib/suck/suck.phrases"	/* default location for phrase file */
-+#define HISTORY_FILE "/var/lib/news/history"   /* default location for history file */
++#define N_PHRASES "/usr/lib/suck.phrases"	/* default location for phrase file */
++#define HISTORY_FILE "/var/lib/news/history"     /* default location for history file */
  
  /* TEMP FILES created */
  #define N_NEWRC "suck.newrc"
