@@ -17,8 +17,8 @@ Provides:	news-sucker
 Requires:	inn >= 2.0
 %requires_pkg   perl
 %requires_pkg   gawk
-URL:         http://home.att.net/~bobyetman/index.html
-BuildRoot:   /tmp/%{name}-%{version}-root
+URL:		http://home.att.net/~bobyetman/index.html
+BuildRoot:	/tmp/%{name}-%{version}-root
 
 %description
 The primary use for suck is to feed a local INN or CNEWS server, without
@@ -40,6 +40,7 @@ tego pakietu!
 
 %prep
 %setup -q
+cp $RPM_SOURCE_DIR/suck-README.FIRST README.FIRST
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
@@ -69,7 +70,7 @@ install sample/get.news.inn \
 install sample/sucknewsrc.sample $RPM_BUILD_ROOT/var/lib/suck/sucknewsrc
 
 gzip -9nf $RPM_BUILD_ROOT/usr/man/man1/* \
-	CHANGELOG CONTENTS README README.Gui README.Xover
+	CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST
 
 %post 
 if [ "$1" = 1 ]; then
@@ -101,7 +102,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc {CHANGELOG,CONTENTS,README,README.Gui,README.Xover}.gz
+%doc {CHANGELOG,CONTENTS,README,README.Gui,README.Xover,README.FIRST}.gz
 %doc sample
 
 %attr(755,root,root) /usr/bin/*
