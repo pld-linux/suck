@@ -1,23 +1,24 @@
 Summary:	suck receives/sends news via NNTP
 Summary(pl):	suck odbiera i wysy³a newsy przez NNTP
 Name:		suck
-Version:	4.1.2
-Release:	2
+Version:	4.2.0
+Release:	1
 Copyright:	Public Domain
 Group:		Networking/News
 Group(pl):	Sieciowe/News
 Source0:	http://home.att.net/~bobyetman/%{name}-%{version}.tar.gz
 Source1:	suck.log
-Source2:	suck-README.FIRST.gz
-Patch0:		suck-makefile.patch
+Patch0:		suck-config.patch
 Patch1:		suck-script.patch
-Patch2:		suck-config.patch
-Patch3:		suck-perl_int.patch
-Patch4:		suck-scripts.patch
+Patch2:		suck-perl_int.patch
+Patch3:		suck-scripts.patch
+Patch4:		suck-readme.patch
 Provides:	news-sucker
 Requires:	inn >= 2.0
-Requires:	perl
 Requires:	gawk
+%requires_eq    perl
+BuildPrereq:	autoconf >= 2.13-8
+BuildPrereq:	perl
 URL:		http://home.att.net/~bobyetman/index.html
 BuildRoot:	/tmp/%{name}-%{version}-root
 
@@ -41,7 +42,6 @@ tego pakietu!
 
 %prep
 %setup -q
-cp %{SOURCE2} README.FIRST.gz
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
@@ -52,6 +52,7 @@ cp %{SOURCE2} README.FIRST.gz
 PERL_CORE_PLD="`perl -MConfig -e 'print $Config{archlib}'`/CORE"
 export PERL_CORE_PLD
 
+autoconf
 CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" \
 ./configure %{_target} \
 	--prefix=$RPM_BUILD_ROOT/usr
@@ -60,21 +61,23 @@ make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/{etc/logrotate.d,var/lib/suck}
+install -d $RPM_BUILD_ROOT/{etc/logrotate.d,var/state/suck}
 
-make install prefix=$RPM_BUILD_ROOT/usr
+make installall prefix=$RPM_BUILD_ROOT/usr
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/suck
 install sample/get.news.inn \
 	sample/get.news.generic \
 	sample/put.news \
 	sample/put.news.sm \
-	$RPM_BUILD_ROOT/var/lib/suck
+	sample/*.pl \
+	$RPM_BUILD_ROOT/var/state/suck
 install sample/sucknewsrc.sample \
-	$RPM_BUILD_ROOT/var/lib/suck/sucknewsrc
+	$RPM_BUILD_ROOT/var/state/suck/sucknewsrc
 
-gzip -9nf $RPM_BUILD_ROOT/usr/man/man1/* \
-	CHANGELOG CONTENTS README README.Gui README.Xover
+gzip -9nf $RPM_BUILD_ROOT/usr/share/man/man1/* \
+	CHANGELOG CONTENTS README README.Gui README.Xover README.FIRST \
+	perl/README
 
 %post 
 if [ "$1" = 1 ]; then
@@ -82,15 +85,15 @@ if [ "$1" = 1 ]; then
   touch /var/log/suck.errlog
   chown news.news /var/log/suck.errlog
   chmod 644 /var/log/suck.errlog
-  touch /var/lib/suck/suck.killlog
-  chown news.news /var/lib/suck/suck.killlog
-  chmod 644 /var/lib/suck/suck.killlog
+  touch /var/state/suck/suck.killlog
+  chown news.news /var/state/suck/suck.killlog
+  chmod 644 /var/state/suck/suck.killlog
 fi
 
 %preun
 if [ "$1" = 0 ]; then
   # Remove current killfile log, or rpm -e will complain dir isn't empty
-  rm -f /var/lib/suck/suck.killlog*
+  rm -f /var/state/suck/suck.killlog*
 fi
 
 %postun
@@ -107,22 +110,30 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc {CHANGELOG,CONTENTS,README,README.Gui,README.Xover,README.FIRST}.gz
-%doc sample
+%doc sample perl
 
 %attr(755,root,root) /usr/bin/*
 %config /etc/logrotate.d/suck
 
-%attr(775,news,news) %dir /var/lib/suck
+%attr(775,news,news) %dir /var/state/suck
 
-%config %attr(740,news,news) /var/lib/suck/get.news.inn
-%config %attr(740,news,news) /var/lib/suck/get.news.generic
-%config %attr(740,news,news) /var/lib/suck/put.news
-%config %attr(740,news,news) /var/lib/suck/put.news.sm
-%config %attr(644,news,news) /var/lib/suck/sucknewsrc
+%config %attr(740,news,news) /var/state/suck/get.news.inn
+%config %attr(740,news,news) /var/state/suck/get.news.generic
+%config %attr(740,news,news) /var/state/suck/put.news
+%config %attr(740,news,news) /var/state/suck/put.news.sm
+%config %attr(740,news,news) /var/state/suck/*.pl
+%config %attr(644,news,news) /var/state/suck/sucknewsrc
 
-/usr/man/man1/*
+/usr/share/man/man1/*
 
 %changelog
+* Thu May 13 1999 Piotr Czerwiñski <pius@pld.org.pl>
+  [4.2.0-1]
+- updated to 4.2.0,
+- added suck-readme.patch,
+- removed suck-makefile.patch,
+- package is now FHS 2.0 compliant.
+
 * Mon Apr 19 1999 Piotr Czerwiñski <pius@pld.org.pl>
   [4.1.2-2]
 - recompiled on new rpm.
