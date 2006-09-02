@@ -34,7 +34,7 @@ without the remote NNTP feeding you articles. It is designed for a
 small, partial news feed. It is NOT designed to feed 10,000 groups and
 3 Gigs of articles a day.
 
-Read %{_defaultdocdir}/%{name}-%{version}/README.FIRST* after
+Read %{_docdir}/%{name}-%{version}/README.FIRST* after
 installing this package!
 
 %description -l pl
@@ -44,7 +44,7 @@ wymagania konfiguracji feedu z tamtej strony. Jest przeznaczony do
 ma³ego, czê¶ciowego feedu. Nie jest przeznaczony dla 10000 grup i 3 GB
 postów dziennie.
 
-Przeczytaj %{_defaultdocdir}/%{name}-%{version}/README.FIRST* po
+Przeczytaj %{_docdir}/%{name}-%{version}/README.FIRST* po
 zainstalowaniu tego pakietu!
 
 %prep
