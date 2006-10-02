@@ -123,6 +123,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(750,root,root) %config(noreplace) %{_localstatedir}/*.pl
 %attr(640,root,root) %config(noreplace) %{_localstatedir}/sucknewsrc
 %attr(640,root,root) %config(noreplace) %{_localstatedir}/active-ignore
+%dir %{_sysconfdir}/news/suck
 %attr(640,root,root) %config(noreplace) %{_sysconfdir}/news/suck/*
 %{_mandir}/man1/*
 
