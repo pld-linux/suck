@@ -1,6 +1,6 @@
 %include	/usr/lib/rpm/macros.perl
 Summary:	suck receives/sends news via NNTP
-Summary(pl):	suck odbiera i wysy�a newsy przez NNTP
+Summary(pl.UTF-8):   suck odbiera i wysyła newsy przez NNTP
 Name:		suck
 Version:	4.3.2
 Release:	4
@@ -37,12 +37,12 @@ small, partial news feed. It is NOT designed to feed 10,000 groups and
 Read %{_docdir}/%{name}-%{version}/README.FIRST* after
 installing this package!
 
-%description -l pl
-suck dostarcza posty lokalnemu serwerowi news�w, INN-owi albo
-CNEWS-owi, przed zdalnym serwerem udaj�c zwyk�y czytnik, a wi�c bez
+%description -l pl.UTF-8
+suck dostarcza posty lokalnemu serwerowi newsów, INN-owi albo
+CNEWS-owi, przed zdalnym serwerem udając zwykły czytnik, a więc bez
 wymagania konfiguracji feedu z tamtej strony. Jest przeznaczony do
-ma�ego, cz�ciowego feedu. Nie jest przeznaczony dla 10000 grup i 3 GB
-post�w dziennie.
+małego, częściowego feedu. Nie jest przeznaczony dla 10000 grup i 3 GB
+postów dziennie.
 
 Przeczytaj %{_docdir}/%{name}-%{version}/README.FIRST* po
 zainstalowaniu tego pakietu!
