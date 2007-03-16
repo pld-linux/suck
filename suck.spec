@@ -15,6 +15,7 @@ Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 Patch2:		%{name}-perl-5.6.patch
 Patch3:		%{name}-gets.patch
+# http://www.bacza.net/files/suck-4.3.2-ipv6.patch
 Patch4:		%{name}-ipv6.patch
 URL:		http://www.sucknews.org/index.html
 BuildRequires:	autoconf
