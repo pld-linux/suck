@@ -3,7 +3,7 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl.UTF-8):	suck odbiera i wysyła newsy przez NNTP
 Name:		suck
 Version:	4.3.2
-Release:	4
+Release:	5
 License:	Public Domain
 Group:		Networking/News
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
@@ -15,6 +15,7 @@ Patch0:		%{name}-PLD.patch
 Patch1:		%{name}-DESTDIR.patch
 Patch2:		%{name}-perl-5.6.patch
 Patch3:		%{name}-gets.patch
+Patch4:		%{name}-ipv6.patch
 URL:		http://www.sucknews.org/index.html
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -53,6 +54,7 @@ zainstalowaniu tego pakietu!
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 %build
 %{__aclocal}
