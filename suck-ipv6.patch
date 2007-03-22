@@ -1,6 +1,6 @@
 diff -ur suck-4.3.2-orig/active.c suck-4.3.2/active.c
 --- suck-4.3.2-orig/active.c	2001-09-15 00:06:40.000000000 +0200
-+++ suck-4.3.2/active.c	2007-03-14 18:08:33.000000000 +0100
++++ suck-4.3.2/active.c	2007-03-22 18:56:20.000000000 +0100
 @@ -181,7 +181,6 @@
  	
  	/* connect to localhost NNTP server */
@@ -20,7 +20,7 @@ diff -ur suck-4.3.2-orig/active.c suck-4.3.2/active.c
  			close(fd);
 diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
 --- suck-4.3.2-orig/both.c	2003-03-25 23:38:45.000000000 +0100
-+++ suck-4.3.2/both.c	2007-03-14 18:16:16.000000000 +0100
++++ suck-4.3.2/both.c	2007-03-22 18:57:27.000000000 +0100
 @@ -137,36 +137,51 @@
  	}
  	return retval;
@@ -31,7 +31,7 @@ diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
 -	struct in_addr saddr;
 -	int c;
 -	struct hostent *hi = NULL;
-+struct addrinfo *get_addrinfo(int v4only, const char *host, const char *port) {
++struct addrinfo *get_addrinfo(int family, const char *host, const char *port) {
 +	struct addrinfo *hi = NULL;
  
 -	if(host==NULL) { 
@@ -54,7 +54,7 @@ diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
 +		
 +		memset(&hints, 0, sizeof(hints));
 +		
-+		hints.ai_family = v4only ? PF_INET : PF_UNSPEC;
++		hints.ai_family = family;
 +		hints.ai_socktype = SOCK_STREAM;
 +		hints.ai_flags = AI_CANONNAME;
 +		
@@ -92,7 +92,7 @@ diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
  	
  #ifdef HAVE_LIBSSL
  	SSL *ssl_struct = NULL;
-@@ -184,65 +199,140 @@
+@@ -184,65 +199,181 @@
  	}
  #endif
  	/* handle host:port type syntax */
@@ -180,7 +180,7 @@ diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
  	/* Find the internet address of the NNTP server */
 - 	*hi = get_hostent(realhost);
 - 	if(*hi == NULL) {
-+ 	hi = get_addrinfo(v4only, realhost, sport);
++ 	hi = get_addrinfo(v4only ? PF_INET : PF_UNSPEC, realhost, sport);
 + 	if (hi == NULL)
 + 	{
  		error_log(ERRLOG_REPORT,"%v1%: ",realhost, NULL);
@@ -197,7 +197,37 @@ diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
 -		}
 - 		if((*hi)->h_addrtype != AF_INET) {
 -  			error_log(ERRLOG_REPORT, both_phrases[5], NULL);
--		}
++	else
++	{
++		int supported_pf = 0;
++		char *canonname = hi->ai_canonname ? hi->ai_canonname : realhost;
++		
++		struct addrinfo *hi_ptr = hi;
++		
++		char *vhost = NULL;
++		struct addrinfo *hi_vhost = NULL;
++		
++		print_phrases(msgs, both_phrases[3], canonname, NULL);
++		
++		if (!v4only)
++		{
++			// init IPv6 virtual host functionality.
++			
++			// if the VHOST environment variable is set, try to use its value
++			// as the local address for the outgoing connection.
++			
++			vhost = getenv("VHOST");
++			
++			if (vhost)
++			{
++				hi_vhost = get_addrinfo(PF_INET6, vhost, NULL);
++				
++				if (!hi_vhost)
++				{
++					print_phrases(msgs, "Invalid VHOST: %v1%\n", vhost, NULL);
++				}
++			}
+ 		}
 -		else {
 -			while((aptr = (struct in_addr *)*((*hi)->h_addr_list)++) != NULL) {
 -				saddr = *aptr;
@@ -218,26 +248,20 @@ diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
 -					MyPerror(both_phrases[7]);
 -					close(sockfd);
 -					sockfd = -1;
-+	else
-+	{
-+		int supported_pf = 0;
-+		char *canonname = hi->ai_canonname ? hi->ai_canonname : realhost;
 +		
-+		print_phrases(msgs, both_phrases[3], canonname, NULL);
-+		
-+ 		while (hi)
++ 		while (hi_ptr)
 +		{
-+ 			if ((hi->ai_family == PF_INET) || (hi->ai_family == PF_INET6))
++ 			if ((hi_ptr->ai_family == PF_INET) || (hi_ptr->ai_family == PF_INET6))
 +			{
 +				char num_host[NI_MAXHOST];
 +				
 +				supported_pf++;
 +				
-+				if (!getnameinfo(hi->ai_addr, hi->ai_addrlen, num_host, sizeof(num_host), NULL, 0, NI_NUMERICHOST))
++				if (!getnameinfo(hi_ptr->ai_addr, hi_ptr->ai_addrlen, num_host, sizeof(num_host), NULL, 0, NI_NUMERICHOST))
 +					print_phrases(msgs, both_phrases[17], num_host, NULL);
 +				
 +				/* Create a socket */
-+ 				if ((sockfd = socket(hi->ai_family, SOCK_STREAM, SOCKET_PROTOCOL)) < 0)
++ 				if ((sockfd = socket(hi_ptr->ai_family, SOCK_STREAM, SOCKET_PROTOCOL)) < 0)
 +				{
 +					MyPerror(both_phrases[6]);
  				}
@@ -245,8 +269,23 @@ diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
 -					print_phrases(msgs,both_phrases[8], (*hi)->h_name, NULL);
 +				else
 +				{
++					if ((hi_ptr->ai_family == PF_INET6) && (hi_vhost))
++					{
++						// IPv6 virtual host in action:
++						// explicitly bind() the socket to the specified local address
++						
++						if (bind(sockfd, hi_vhost->ai_addr, hi_vhost->ai_addrlen) < 0)
++						{
++							print_phrases(msgs, "Invalid VHOST: %v1%\n", vhost, NULL);
++						}
++						else
++						{
++							print_phrases(msgs, "VHOST: %v1%\n", vhost, NULL);
++						}
++					}
++					
 +					/* Establish a connection */
-+					if (connect(sockfd, hi->ai_addr, hi->ai_addrlen) < 0)
++					if (connect(sockfd, hi_ptr->ai_addr, hi_ptr->ai_addrlen) < 0)
 +					{
 +						MyPerror(both_phrases[7]);
 +						close(sockfd);
@@ -261,7 +300,7 @@ diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
 -			}
 + 			}
 +			
-+ 			hi = hi->ai_next;
++ 			hi_ptr = hi_ptr->ai_next;
 + 		}
 + 		
 + 		if (!supported_pf)
@@ -271,13 +310,14 @@ diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
 +		
 +		free(bufhost);
 +		free_addrinfo(hi);
++		free_addrinfo(hi_vhost);
 +		
  #ifdef HAVE_LIBSSL
  		if(sockfd > -1 && do_ssl == TRUE) {
  			if((ssl_struct = SSL_new(test1)) == NULL) {
 diff -ur suck-4.3.2-orig/both.h suck-4.3.2/both.h
 --- suck-4.3.2-orig/both.h	2002-08-28 00:54:34.000000000 +0200
-+++ suck-4.3.2/both.h	2007-03-14 18:08:33.000000000 +0100
++++ suck-4.3.2/both.h	2007-03-22 18:56:20.000000000 +0100
 @@ -9,11 +9,12 @@
  /* declarations */
  int sgetline(int fd, char **sbuf, int, void *);
@@ -288,14 +328,14 @@ diff -ur suck-4.3.2-orig/both.h suck-4.3.2/both.h
  char *number(char *sp, int *intPtr);
  char *get_long(char *, long *);
 -struct hostent *get_hostent(const char *host);
-+struct addrinfo *get_addrinfo(int v4only, const char *host, const char *port);
++struct addrinfo *get_addrinfo(int family, const char *host, const char *port);
 +void free_addrinfo(struct addrinfo *hi);
  void signal_block(int);
  void error_log(int mode, const char *fmt, ...);
  void MyPerror(const char *);
 diff -ur suck-4.3.2-orig/rpost.c suck-4.3.2/rpost.c
 --- suck-4.3.2-orig/rpost.c	2003-03-25 23:50:00.000000000 +0100
-+++ suck-4.3.2/rpost.c	2007-03-14 18:08:33.000000000 +0100
++++ suck-4.3.2/rpost.c	2007-03-22 18:56:20.000000000 +0100
 @@ -78,6 +78,7 @@
  #ifdef PERL_EMBED
  	PerlInterpreter *perl_int;
@@ -358,7 +398,7 @@ diff -ur suck-4.3.2-orig/rpost.c suck-4.3.2/rpost.c
  				break;
 diff -ur suck-4.3.2-orig/suck.c suck-4.3.2/suck.c
 --- suck-4.3.2-orig/suck.c	2003-03-28 20:24:54.000000000 +0100
-+++ suck-4.3.2/suck.c	2007-03-14 18:08:33.000000000 +0100
++++ suck-4.3.2/suck.c	2007-03-22 18:56:20.000000000 +0100
 @@ -118,6 +118,7 @@
  	ARG_HIST_FILE, ARG_HEADER_ONLY, ARG_ACTIVE_LASTREAD, ARG_USEXOVER, ARG_RESETCOUNTER, \
  	ARG_LOW_READ, ARG_SHOW_GROUP, ARG_USE_SSL, ARG_LOCAL_SSL, ARG_BATCH_POST_NR, \
@@ -420,7 +460,7 @@ diff -ur suck-4.3.2-orig/suck.c suck-4.3.2/suck.c
  	
 diff -ur suck-4.3.2-orig/suck.h suck-4.3.2/suck.h
 --- suck-4.3.2-orig/suck.h	2002-08-28 00:44:09.000000000 +0200
-+++ suck-4.3.2/suck.h	2007-03-14 18:08:33.000000000 +0100
++++ suck-4.3.2/suck.h	2007-03-22 18:56:20.000000000 +0100
 @@ -103,6 +103,7 @@
  	void *local_ssl_struct;
  	int batch_post_nr;
@@ -431,7 +471,7 @@ diff -ur suck-4.3.2-orig/suck.h suck-4.3.2/suck.h
  int get_a_chunk(PMaster, FILE *);
 diff -ur suck-4.3.2-orig/testhost.c suck-4.3.2/testhost.c
 --- suck-4.3.2-orig/testhost.c	2003-03-23 16:34:46.000000000 +0100
-+++ suck-4.3.2/testhost.c	2007-03-14 18:08:33.000000000 +0100
++++ suck-4.3.2/testhost.c	2007-03-22 18:56:20.000000000 +0100
 @@ -59,7 +59,7 @@
  int main(int argc, char *argv[]) {
  
