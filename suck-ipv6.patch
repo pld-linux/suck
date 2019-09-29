@@ -1,511 +1,202 @@
-diff -ur suck-4.3.2-orig/active.c suck-4.3.2/active.c
---- suck-4.3.2-orig/active.c	2001-09-15 00:06:40.000000000 +0200
-+++ suck-4.3.2/active.c	2007-03-22 18:56:20.000000000 +0100
-@@ -181,7 +181,6 @@
- 	
- 	/* connect to localhost NNTP server */
- 	int fd;
--	struct hostent *hi;
- 	char *inbuf;
- 	unsigned int port;
- 
-@@ -190,7 +189,7 @@
+--- suck-4.3.4/active.c.orig	2018-08-01 15:54:24.000000000 +0200
++++ suck-4.3.4/active.c	2019-09-29 19:31:54.637781124 +0200
+@@ -189,7 +189,7 @@ int connect_local(PMaster master) {
  		do_debug("Connecting to %s on port %d\n", master->localhost, port);
  	}
- 	
--	if((fd = connect_to_nntphost(master->localhost, &hi, NULL, port, master->local_ssl, &master->local_ssl_struct)) >= 0) {
-+	if((fd = connect_to_nntphost(master->v4only, master->localhost, NULL, port, master->local_ssl, &master->local_ssl_struct)) >= 0) {
+ 
+-	if((fd = connect_to_nntphost(master->localhost, NULL, 0, NULL, port, master->local_ssl, &master->local_ssl_struct)) >= 0) {
++	if((fd = connect_to_nntphost(master->localhost, NULL, 0, NULL, port, master->local_ssl, &master->local_ssl_struct, master->ai_family)) >= 0) {
  		/* get the announcement line */
  		if(sgetline(fd, &inbuf, master->local_ssl, master->local_ssl_struct) < 0) {
  			close(fd);
-diff -ur suck-4.3.2-orig/both.c suck-4.3.2/both.c
---- suck-4.3.2-orig/both.c	2003-03-25 23:38:45.000000000 +0100
-+++ suck-4.3.2/both.c	2007-03-22 18:57:27.000000000 +0100
-@@ -137,36 +137,51 @@
- 	}
- 	return retval;
+--- suck-4.3.4/both.c.orig	2018-08-01 15:54:24.000000000 +0200
++++ suck-4.3.4/both.c	2019-09-29 19:38:49.382200927 +0200
+@@ -139,10 +139,17 @@ char *get_long(char *sp, long *intPtr) {
  }
--
- /*---------------------------------------------*/
--struct hostent *get_hostent(const char *host) {
--	struct in_addr saddr;
--	int c;
--	struct hostent *hi = NULL;
-+struct addrinfo *get_addrinfo(int family, const char *host, const char *port) {
-+	struct addrinfo *hi = NULL;
  
--	if(host==NULL) { 
-+	if (host==NULL)
-+	{
- 		error_log(ERRLOG_REPORT,both_phrases[0], NULL); 
- 	}
--	else {
--		c=*host;
--		if(isdigit(c)) {
-- 			saddr.s_addr = inet_addr(host); 
-- 			hi = gethostbyaddr((char *)&saddr,sizeof(struct in_addr),AF_INET);
--		}
--		else {
--			hi = gethostbyname(host);
--		}
-+	else
-+	{
-+		struct addrinfo hints;
-+		
-+		memset(&hints, 0, sizeof(hints));
-+		
-+		hints.ai_family = family;
-+		hints.ai_socktype = SOCK_STREAM;
-+		hints.ai_flags = AI_CANONNAME;
-+		
+ /*---------------------------------------------*/
+-struct addrinfo *get_addrinfo(const char *host, const char *sport) {
+-	struct addrinfo hints = { .ai_socktype=SOCK_STREAM, .ai_flags = AI_CANONNAME };
++struct addrinfo *get_addrinfo(const char *host, const char *sport, int family) {
++	struct addrinfo hints = { .ai_socktype=SOCK_STREAM, .ai_flags = AI_CANONNAME, .ai_family = family };
+ 	struct addrinfo * res = NULL;
+ 
 +#ifdef AI_ADDRCONFIG
-+		hints.ai_flags |= AI_ADDRCONFIG;
++	hints.ai_flags |= AI_ADDRCONFIG;
 +#endif
-+		
 +#ifdef AI_NUMERICSERV
-+		hints.ai_flags |= AI_NUMERICSERV;
++	hints.ai_flags |= AI_NUMERICSERV;
 +#endif
-+		
-+		if (getaddrinfo(host, port, &hints, &hi))
-+			hi = NULL;
++
+ 	if(host==NULL) {
+ 		error_log(ERRLOG_REPORT,both_phrases[0], NULL);
  	}
- 	return hi;
+@@ -155,7 +162,7 @@ struct addrinfo *get_addrinfo(const char
+ 	return res;
  }
  /*--------------------------------------------*/
--int connect_to_nntphost(const char *host, struct hostent **hi, FILE *msgs, unsigned short int portnr, int do_ssl, void **ssl) {
-+void free_addrinfo(struct addrinfo *hi)
-+{
-+	if (hi) freeaddrinfo(hi);
-+}
-+/*--------------------------------------------*/
-+int connect_to_nntphost(int v4only, const char *host, FILE *msgs, unsigned short int portnr, int do_ssl, void **ssl) {
- 	char *ptr, *realhost;
--	struct in_addr *aptr;
--	struct in_addr saddr;
--	struct sockaddr_in address;
-+	char *bufhost;
-+	char *ptr_last_colon;
-+	struct addrinfo *hi;
+-int connect_to_nntphost(const char *host, char * name, size_t namelen, FILE *msgs, unsigned short int portnr, int do_ssl, void **ssl) {
++int connect_to_nntphost(const char *host, char * name, size_t namelen, FILE *msgs, unsigned short int portnr, int do_ssl, void **ssl, int family) {
+ 	char *realhost;
  	char sport[10];
  	int sockfd = -1;
-+	int colons;
- 	
- #ifdef HAVE_LIBSSL
- 	SSL *ssl_struct = NULL;
-@@ -184,65 +199,181 @@
- 	}
- #endif
- 	/* handle host:port type syntax */
--	realhost = strdup(host);
--	if(realhost == NULL) {
-+	bufhost = strdup(host);
-+	if(bufhost == NULL) {
+@@ -191,7 +198,13 @@ int connect_to_nntphost(const char *host
  		MyPerror("out of memory copying host name");
  		return sockfd;
  	}
--	ptr = strchr(realhost, ':');
--	if(ptr != NULL) {
-+	
-+	realhost = bufhost;
-+	
-+	// first count colons
-+	colons = 0;
-+	ptr = realhost;
-+	ptr_last_colon = NULL;
-+	
-+	while (*ptr)
-+	{
-+		if (*ptr == ':')
-+		{
-+			colons++;
-+			ptr_last_colon = ptr;
-+		}
-+		ptr++;
+-	char * ptr = strchr(realhost, ':');
++	char * colonsearchstart = realhost;
++	if(realhost[0] == '[') { /* numeric IPv6 host contains colons, skip this part */
++		char *v6end = strchr(realhost, ']');
++		if (v6end != NULL)
++			colonsearchstart = v6end + 1;
 +	}
-+	
-+	if (colons > 1)
-+	{
-+		// this may be numeric IPv6 addr
-+		// check for [addr]:port syntax
-+		
-+		if (*realhost != '[')
-+		{
-+			// no such syntax -- don't interpret last colon as a port separator
-+			ptr_last_colon = NULL;
-+		}
-+		else
-+		{
-+			// skip leading '['
-+			realhost++;	
-+			
-+			// find trailing ']'
-+			ptr = strchr(realhost, ']');
-+			if (ptr == NULL)
-+			{
-+				// no ']' ??
-+				// try to recover -- just forget about last colon (if any)
-+				ptr_last_colon = NULL;
-+			}
-+			else
-+			{
-+				// null terminate hostname
-+				*ptr = '\0';
-+				
-+				if (ptr_last_colon)
-+				{
-+					// check if last colon is right after ']'
-+					if (++ptr != ptr_last_colon)
-+					{
-+						// well this is not the case..
-+						// try to recover again
-+						ptr_last_colon = NULL;
-+					}
-+				}
-+			}
-+		}
-+	}
-+	
-+	ptr = ptr_last_colon;
-+	if (ptr != NULL)
-+	{
++	char * ptr = strchr(colonsearchstart, ':');
+ 	if(ptr != NULL) {
  		*ptr = '\0';  /* null terminate host name */
  		portnr = atoi(++ptr); /* get port number */
- 	}
- 	
--	
--	
- 	sprintf(sport, "%hu", portnr);	/* cause print_phrases wants all strings */
+@@ -203,7 +216,7 @@ int connect_to_nntphost(const char *host
  	print_phrases(msgs, both_phrases[1], sport, NULL);
  
- 	/* Find the internet address of the NNTP server */
-- 	*hi = get_hostent(realhost);
-- 	if(*hi == NULL) {
-+ 	hi = get_addrinfo(v4only ? PF_INET : PF_UNSPEC, realhost, sport);
-+ 	if (hi == NULL)
-+ 	{
- 		error_log(ERRLOG_REPORT,"%v1%: ",realhost, NULL);
-   		MyPerror(both_phrases[2]);
--		free(realhost);
-+		free(bufhost);
-  	}
--	else {
--		free(realhost);
--		print_phrases(msgs, both_phrases[3], (*hi)->h_name, NULL);
-- 		while((ptr = *((*hi)->h_aliases)) != NULL) {
--			print_phrases(msgs, both_phrases[4], ptr, NULL );
--			(*hi)->h_aliases++;
--		}
-- 		if((*hi)->h_addrtype != AF_INET) {
--  			error_log(ERRLOG_REPORT, both_phrases[5], NULL);
-+	else
-+	{
-+		int supported_pf = 0;
-+		char *canonname = hi->ai_canonname ? hi->ai_canonname : realhost;
-+		
-+		struct addrinfo *hi_ptr = hi;
-+		
-+		char *vhost = NULL;
-+		struct addrinfo *hi_vhost = NULL;
-+		
-+		print_phrases(msgs, both_phrases[3], canonname, NULL);
-+		
-+		if (!v4only)
-+		{
-+			// init IPv6 virtual host functionality.
-+			
-+			// if the VHOST environment variable is set, try to use its value
-+			// as the local address for the outgoing connection.
-+			
-+			vhost = getenv("VHOST");
-+			
-+			if (vhost)
-+			{
-+				hi_vhost = get_addrinfo(PF_INET6, vhost, NULL);
-+				
-+				if (!hi_vhost)
-+				{
-+					print_phrases(msgs, "Invalid VHOST: %v1%\n", vhost, NULL);
-+				}
-+			}
- 		}
--		else {
--			while((aptr = (struct in_addr *)*((*hi)->h_addr_list)++) != NULL) {
--				saddr = *aptr;
--				print_phrases(msgs, both_phrases[17], inet_ntoa(*aptr), NULL);
--			}
--
--			/* Create a socket */
-- 			if((sockfd = socket( AF_INET, SOCK_STREAM, SOCKET_PROTOCOL)) == -1) {
--				MyPerror(both_phrases[6]);
--			}
--			else { 
--				address.sin_family = AF_INET;
--				address.sin_port = htons(portnr);  /* NNTP port */
--				address.sin_addr= saddr;
--
--				/* Establish a connection */
--				if(connect(sockfd, (struct sockaddr *)&address, sizeof address ) == -1) {
--					MyPerror(both_phrases[7]);
--					close(sockfd);
--					sockfd = -1;
-+		
-+ 		while (hi_ptr)
-+		{
-+ 			if ((hi_ptr->ai_family == PF_INET) || (hi_ptr->ai_family == PF_INET6))
-+			{
-+				char num_host[NI_MAXHOST];
-+				
-+				supported_pf++;
-+				
-+				if (!getnameinfo(hi_ptr->ai_addr, hi_ptr->ai_addrlen, num_host, sizeof(num_host), NULL, 0, NI_NUMERICHOST))
-+					print_phrases(msgs, both_phrases[17], num_host, NULL);
-+				
-+				/* Create a socket */
-+ 				if ((sockfd = socket(hi_ptr->ai_family, SOCK_STREAM, SOCKET_PROTOCOL)) < 0)
-+				{
-+					MyPerror(both_phrases[6]);
- 				}
--				else {
--					print_phrases(msgs,both_phrases[8], (*hi)->h_name, NULL);
-+				else
-+				{
-+					if ((hi_ptr->ai_family == PF_INET6) && (hi_vhost))
-+					{
-+						// IPv6 virtual host in action:
-+						// explicitly bind() the socket to the specified local address
-+						
-+						if (bind(sockfd, hi_vhost->ai_addr, hi_vhost->ai_addrlen) < 0)
-+						{
-+							print_phrases(msgs, "Invalid VHOST: %v1%\n", vhost, NULL);
-+						}
-+						else
-+						{
-+							print_phrases(msgs, "VHOST: %v1%\n", vhost, NULL);
-+						}
-+					}
-+					
-+					/* Establish a connection */
-+					if (connect(sockfd, hi_ptr->ai_addr, hi_ptr->ai_addrlen) < 0)
-+					{
-+						MyPerror(both_phrases[7]);
-+						close(sockfd);
-+						sockfd = -1;
-+					}
-+					else
-+					{
-+						print_phrases(msgs, both_phrases[8], canonname, NULL);
-+						break;
-+					}
- 				}
--			}
-+ 			}
-+			
-+ 			hi_ptr = hi_ptr->ai_next;
-+ 		}
-+ 		
-+ 		if (!supported_pf)
-+		{
-+  			error_log(ERRLOG_REPORT, both_phrases[5], NULL);
- 		}
-+		
-+		free(bufhost);
-+		free_addrinfo(hi);
-+		free_addrinfo(hi_vhost);
-+		
- #ifdef HAVE_LIBSSL
- 		if(sockfd > -1 && do_ssl == TRUE) {
- 			if((ssl_struct = SSL_new(test1)) == NULL) {
-diff -ur suck-4.3.2-orig/both.h suck-4.3.2/both.h
---- suck-4.3.2-orig/both.h	2002-08-28 00:54:34.000000000 +0200
-+++ suck-4.3.2/both.h	2007-03-22 18:56:20.000000000 +0100
-@@ -9,11 +9,12 @@
+ 	/* Find the internet addresses of the NNTP server */
+-	ai = get_addrinfo(realhost, sport);
++	ai = get_addrinfo(realhost, sport, family);
+ 	if(ai == NULL) {
+ 		free(realhost);
+ 	}
+--- suck-4.3.4/both.h.orig	2018-08-01 15:54:24.000000000 +0200
++++ suck-4.3.4/both.h	2019-09-29 19:23:51.547064917 +0200
+@@ -9,11 +9,10 @@
  /* declarations */
  int sgetline(int fd, char **sbuf, int, void *);
  int sputline(int fd, const char *outbuf, int, void *);
--int connect_to_nntphost(const char *host, struct hostent **, FILE *, unsigned short int, int, void **);
-+int connect_to_nntphost(int v4only, const char *host, FILE *, unsigned short int, int, void **);
+-int connect_to_nntphost(const char *host, char *, size_t, FILE *, unsigned short int, int, void **);
++int connect_to_nntphost(const char *host, char *, size_t, FILE *, unsigned short int, int, void **, int family);
  void disconnect_from_nntphost(int, int, void **);
  char *number(char *sp, int *intPtr);
  char *get_long(char *, long *);
 -struct hostent *get_hostent(const char *host);
-+struct addrinfo *get_addrinfo(int family, const char *host, const char *port);
-+void free_addrinfo(struct addrinfo *hi);
  void signal_block(int);
  void error_log(int mode, const char *fmt, ...);
  void MyPerror(const char *);
-diff -ur suck-4.3.2-orig/rpost.c suck-4.3.2/rpost.c
---- suck-4.3.2-orig/rpost.c	2003-03-25 23:50:00.000000000 +0100
-+++ suck-4.3.2/rpost.c	2007-03-22 18:56:20.000000000 +0100
-@@ -78,6 +78,7 @@
+--- suck-4.3.4/rpost.c.orig	2019-09-29 12:37:57.232336891 +0200
++++ suck-4.3.4/rpost.c	2019-09-29 19:41:21.641376068 +0200
+@@ -79,6 +79,7 @@ typedef struct {
  #ifdef PERL_EMBED
  	PerlInterpreter *perl_int;
  #endif
-+	int v4only;
++        int ai_family;
  } Args, *Pargs;
  
  /* function declarations */
-@@ -114,7 +115,6 @@
- int main(int argc, char *argv[], char *env[]) {
- 	char *inbuf;
- 	int response, retval, loop, fargc, i;
--	struct hostent *hi;
- 	struct stat sbuf;
- 	char **args, **fargs;
- 	Args myargs;
-@@ -149,6 +149,7 @@
+@@ -149,6 +150,7 @@ int main(int argc, char *argv[], char *e
  #ifdef PERL_EMBED
  	myargs.perl_int = NULL;
  #endif
-+	myargs.v4only = FALSE;
++	myargs.ai_family = PF_UNSPEC;
  
  	/* have to do this next so if set on cmd line, overrides this */
  #ifdef N_PHRASES		/* in case someone nukes def */
-@@ -230,6 +231,7 @@
- #ifdef TIMEOUT
- 			do_debug("TimeOut = %d\n", TimeOut);
- #endif
-+			do_debug("myargs.v4 = %d\n", myargs.v4only);
- 			do_debug("myargs.debug = TRUE\n");
- 		}
- 
-@@ -241,7 +243,7 @@
+@@ -241,7 +243,7 @@ int main(int argc, char *argv[], char *e
  			retval = RETVAL_ERROR;
  		}
  		else {
--			myargs.sockfd = connect_to_nntphost( myargs.host, &hi, myargs.status_fptr, myargs.portnr, myargs.do_ssl, &myargs.ssl_struct);
-+			myargs.sockfd = connect_to_nntphost(myargs.v4only, myargs.host, myargs.status_fptr, myargs.portnr, myargs.do_ssl, &myargs.ssl_struct);
+-			myargs.sockfd = connect_to_nntphost( myargs.host, hostname, sizeof hostname, myargs.status_fptr, myargs.portnr, myargs.do_ssl, &myargs.ssl_struct);
++			myargs.sockfd = connect_to_nntphost( myargs.host, hostname, sizeof hostname, myargs.status_fptr, myargs.portnr, myargs.do_ssl, &myargs.ssl_struct, myargs.ai_family);
  			if(myargs.sockfd < 0) {
  				retval = RETVAL_ERROR;
  			}
-@@ -296,7 +298,7 @@
- 				retval = do_article(&myargs, stdin);
- 			}
- 	
--			print_phrases(myargs.status_fptr, rpost_phrases[4], hi->h_name, NULL);
-+			print_phrases(myargs.status_fptr, rpost_phrases[4], myargs.host, NULL);
- 			if(myargs.debug == TRUE) {
- 				do_debug("Sending quit");
- 			}
-@@ -738,6 +740,9 @@
+@@ -738,6 +740,9 @@ int scan_args(Pargs myargs, int argc, ch
  				myargs->portnr = DEFAULT_SSL_PORT;
  				break;
  #endif
-+			case '4':
-+				myargs->v4only = TRUE;
++			case '4': /* IPv4 only */
++				myargs->ai_family = PF_INET;
 +				break;
  			  default:
  				error_log(ERRLOG_REPORT, rpost_phrases[30], argv[loop],NULL);
  				break;
-diff -ur suck-4.3.2-orig/suck.c suck-4.3.2/suck.c
---- suck-4.3.2-orig/suck.c	2003-03-28 20:24:54.000000000 +0100
-+++ suck-4.3.2/suck.c	2007-03-22 18:56:20.000000000 +0100
-@@ -118,6 +118,7 @@
+--- suck-4.3.4/suck.c.orig	2018-08-01 15:54:24.000000000 +0200
++++ suck-4.3.4/suck.c	2019-09-29 19:43:03.297492016 +0200
+@@ -118,6 +118,7 @@ enum {
  	ARG_HIST_FILE, ARG_HEADER_ONLY, ARG_ACTIVE_LASTREAD, ARG_USEXOVER, ARG_RESETCOUNTER, \
  	ARG_LOW_READ, ARG_SHOW_GROUP, ARG_USE_SSL, ARG_LOCAL_SSL, ARG_BATCH_POST_NR, \
  	ARG_PASSWD_ENV,
-+	ARG_V4_ONLY,
- }; 
++	ARG_IPV4_ONLY,
+ };
  
  typedef struct Arglist{
-@@ -198,6 +199,7 @@
+@@ -198,6 +199,7 @@ const Args arglist[] = {
  	{"W",  "wait", 2, ARG_WAIT, 46},
  	{"X",  "no_xover", 0, ARG_XOVER, -1},
  	{"Z",  "use_xover", 0, ARG_USEXOVER, -1},
-+	{"4",  "v4", 0, ARG_V4_ONLY, -1},
- 	
++	{"4",  "v4", 0, ARG_IPV4_ONLY, -1},
+ 
  };
  
-@@ -290,6 +292,7 @@
+@@ -290,6 +292,7 @@ int main(int argc, char *argv[]) {
  	master.local_ssl_struct = NULL;
  	master.batch_post_nr = 0;
  	master.passwd_env = FALSE;
-+	master.v4only = FALSE;
- 	
++	master.ai_family = PF_UNSPEC;
+ 
  	/* have to do this next so if set on cmd line, overrides this */
  
-@@ -392,6 +395,7 @@
- 		do_debug("master.local_ssl = %s\n", true_str(master.local_ssl));
- 		do_debug("master.batch_post_nr =  %d\n",master.batch_post_nr);
- 		do_debug("master.passwd_env = %s\n", true_str(master.passwd_env));
-+		do_debug("master.v4 = %d\n", master.v4only);
- #ifdef TIMEOUT
- 		do_debug("TimeOut = %d\n", TimeOut);
- #endif
-@@ -665,7 +669,6 @@
- 
- 	char *inbuf;
- 	int nr, resp, retval = RETVAL_OK;
--	struct hostent *hi;
- 	FILE *fp;
- 	
- 	
-@@ -696,7 +699,7 @@
+@@ -695,7 +698,7 @@ int do_connect(PMaster master, int which
  	}
  	fp = (which_time == CONNECT_FIRST) ? master->msgs : NULL;
  
--	master->sockfd = connect_to_nntphost( master->host, &hi, fp, master->portnr, master->do_ssl, &master->ssl_struct);
-+	master->sockfd = connect_to_nntphost(master->v4only, master->host, fp, master->portnr, master->do_ssl, &master->ssl_struct);
- 	
+-	master->sockfd = connect_to_nntphost( master->host, NULL, 0, fp, master->portnr, master->do_ssl, &master->ssl_struct);
++	master->sockfd = connect_to_nntphost( master->host, NULL, 0, fp, master->portnr, master->do_ssl, &master->ssl_struct, master->ai_family);
+ 
  	if(master->sockfd < 0 ) {
  		retval = RETVAL_ERROR;
-@@ -2132,6 +2135,9 @@
+@@ -2131,6 +2134,9 @@ int parse_args(PMaster master, int arg,
  		master->local_ssl = TRUE;
  		break;
  #endif
-+	case ARG_V4_ONLY:
-+		master->v4only = TRUE;
++	case ARG_IPV4_ONLY:
++		master->ai_family = PF_INET;
 +		break;
- 			
+ 
  	}
- 	
-diff -ur suck-4.3.2-orig/suck.h suck-4.3.2/suck.h
---- suck-4.3.2-orig/suck.h	2002-08-28 00:44:09.000000000 +0200
-+++ suck-4.3.2/suck.h	2007-03-22 18:56:20.000000000 +0100
-@@ -103,6 +103,7 @@
+ 
+--- suck-4.3.4/suck.h.orig	2018-08-01 15:54:24.000000000 +0200
++++ suck-4.3.4/suck.h	2019-09-29 19:43:18.490743041 +0200
+@@ -103,6 +103,7 @@ typedef struct {
  	void *local_ssl_struct;
  	int batch_post_nr;
  	int passwd_env;
-+	int v4only;
++	int ai_family;
  } Master, *PMaster;
  
  int get_a_chunk(PMaster, FILE *);
-diff -ur suck-4.3.2-orig/testhost.c suck-4.3.2/testhost.c
---- suck-4.3.2-orig/testhost.c	2003-03-23 16:34:46.000000000 +0100
-+++ suck-4.3.2/testhost.c	2007-03-22 18:56:20.000000000 +0100
-@@ -59,7 +59,7 @@
+--- suck-4.3.4/testhost.c.orig	2018-08-01 15:54:24.000000000 +0200
++++ suck-4.3.4/testhost.c	2019-09-29 19:44:56.280213270 +0200
+@@ -59,6 +59,7 @@ void free_phrases(void);
  int main(int argc, char *argv[]) {
  
  	int sockfd, response, loop, cmd, quiet, mode_reader, do_ssl, retval = RETVAL_OK;
--	struct hostent *hi;
-+	int v4only = FALSE;
++	int ai_family = PF_UNSPEC;
  	struct stat sbuf;
  	unsigned short int portnr;
  	FILE *fptr = stdout;		/* used to print output to */
-@@ -215,6 +215,9 @@
+@@ -214,6 +215,9 @@ int main(int argc, char *argv[]) {
  				portnr = DEFAULT_SSL_PORT;
  				break;
  #endif
 +			case '4':
-+				v4only = TRUE;
++				ai_family = PF_INET;
 +				break;
  			  default:
  				retval = RETVAL_ERROR;
  				error_log(ERRLOG_REPORT, test_phrases[7], argv[loop], NULL);
-@@ -226,10 +229,16 @@
- 		}
- 	}
- 
-+	if (!host)
-+	{
-+		error_log(ERRLOG_REPORT, "No host specified\n", NULL);
-+		retval = RETVAL_ERROR;
-+	}
-+
+@@ -228,7 +232,7 @@ int main(int argc, char *argv[]) {
  	if(retval == RETVAL_OK) {
  		load_phrases(phrases);	/* this is here so everything displays okay */
  
--		sockfd = connect_to_nntphost( host, &hi, (quiet == FALSE)?  fptr : NULL, portnr, do_ssl, &ssl_struct);
-+		sockfd = connect_to_nntphost(v4only, host, (quiet == FALSE)?  fptr : NULL, portnr, do_ssl, &ssl_struct);
+-		sockfd = connect_to_nntphost( host, NULL, 0, (quiet == FALSE)?  fptr : NULL, portnr, do_ssl, &ssl_struct);
++		sockfd = connect_to_nntphost( host, NULL, 0, (quiet == FALSE)?  fptr : NULL, portnr, do_ssl, &ssl_struct, ai_family);
  		if(sockfd < 0 ) {
  			retval = RETVAL_ERROR;
  		}

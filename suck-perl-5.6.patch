@@ -1,12 +1,11 @@
-diff -Nur suck-4.2.4.orig/killprg.c suck-4.2.4/killprg.c
---- suck-4.2.4.orig/killprg.c	Sat Jan 27 01:52:45 2001
-+++ suck-4.2.4/killprg.c	Sat Jan 27 01:52:22 2001
+--- suck-4.3.4.orig/killprg.c	Sat Jan 27 01:52:45 2001
++++ suck-4.3.4/killprg.c	Sat Jan 27 01:52:22 2001
 @@ -58,6 +58,7 @@
  #ifdef PERL_EMBED
  #include <EXTERN.h>
  #include <perl.h>
 +#include <XSUB.h>
- #ifdef OLD_PERL  
+ #ifdef OLD_PERL
  #ifndef ERRSV
  # define ERRSV (GvSV(errgv)) /* needed for perl 5.004 and earlier */
 diff -Nur suck-4.2.4.orig/rpost.c suck-4.2.4/rpost.c

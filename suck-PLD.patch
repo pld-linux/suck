@@ -1,4 +1,3 @@
-diff -Nur suck-4.3.2.orig/README.FIRST suck-4.3.2/README.FIRST
 --- suck-4.3.2.orig/README.FIRST	Thu Jan  1 01:00:00 1970
 +++ suck-4.3.2/README.FIRST	Mon Mar 31 22:30:30 2003
 @@ -0,0 +1,24 @@
@@ -26,9 +25,8 @@ diff -Nur suck-4.3.2.orig/README.FIRST suck-4.3.2/README.FIRST
 +
 +Bye,
 +    Karsten Weiss <karsten@addx.au.s.shuttle.de>
-diff -Nur suck-4.3.2.orig/configure.in suck-4.3.2/configure.in
---- suck-4.3.2.orig/configure.in	Sun Mar 23 19:11:07 2003
-+++ suck-4.3.2/configure.in	Mon Mar 31 22:34:56 2003
+--- suck-4.3.4.orig/configure.ac	Sun Mar 23 19:11:07 2003
++++ suck-4.3.4/configure.ac	Mon Mar 31 22:34:56 2003
 @@ -18,11 +18,11 @@
  AC_SUBST(GCC)
  
@@ -424,9 +422,8 @@ diff -Nur suck-4.3.2.orig/sample/get.news.inn suck-4.3.2/sample/get.news.inn
  	echo "You can hang up the modem now"
  
  fi
-diff -Nur suck-4.3.2.orig/sample/put.news suck-4.3.2/sample/put.news
---- suck-4.3.2.orig/sample/put.news	Sun Oct  4 21:32:26 1998
-+++ suck-4.3.2/sample/put.news	Mon Mar 31 22:30:30 2003
+--- suck-4.3.4.orig/sample/put.news	Sun Oct  4 21:32:26 1998
++++ suck-4.3.4/sample/put.news	Mon Mar 31 22:30:30 2003
 @@ -1,34 +1,10 @@
  #!/bin/sh
  
@@ -441,7 +438,7 @@ diff -Nur suck-4.3.2.orig/sample/put.news suck-4.3.2/sample/put.news
 -	echo
 -	echo "Usage `basename $0` infile outfile <RETURN>"
 -	echo
--	exit -1
+-	exit 1
 -fi
 -
 -SEDCMD="/^NNTP-Posting-Host/d"
@@ -455,12 +452,12 @@ diff -Nur suck-4.3.2.orig/sample/put.news suck-4.3.2/sample/put.news
 -		
 -	if [ $? -ne 0 ]; then
 -		echo "Error"
--		exit -1
+-		exit 1
 -	fi
 -
 -else
 -	echo "$1 does not exist"
--	exit -1
+-	exit 1
 -fi
 +# this is just a simple script to use awk to strip off the
 +# NNTP-Posting-Host and Xref headers that my ISP's newsfeed
@@ -470,9 +467,8 @@ diff -Nur suck-4.3.2.orig/sample/put.news suck-4.3.2/sample/put.news
 +	/^$/ {body = 1}
 +	body || !/^(NNTP-Posting-Host|NNTP-Posting-Date|X-Trace|X-Complaints-To|Xref|Path):/
 +' $1 >$2
-diff -Nur suck-4.3.2.orig/sample/put.news.sm suck-4.3.2/sample/put.news.sm
---- suck-4.3.2.orig/sample/put.news.sm	Tue Jun  4 15:20:16 2002
-+++ suck-4.3.2/sample/put.news.sm	Mon Mar 31 22:30:30 2003
+--- suck-4.3.4.orig/sample/put.news.sm	Tue Jun  4 15:20:16 2002
++++ suck-4.3.4/sample/put.news.sm	Mon Mar 31 22:30:30 2003
 @@ -1,29 +1,12 @@
  #!/bin/sh
  
@@ -499,7 +495,7 @@ diff -Nur suck-4.3.2.orig/sample/put.news.sm suck-4.3.2/sample/put.news.sm
 -		
 -	if [ $? -ne 0 ]; then
 -		echo "Error"
--		exit -1
+-		exit 1
 -	fi
 -
 -	rm ${TMPFILE}
@@ -508,9 +504,8 @@ diff -Nur suck-4.3.2.orig/sample/put.news.sm suck-4.3.2/sample/put.news.sm
 +    /^$/ {body = 1}
 +    body || !/^(NNTP-Posting-Host|NNTP-Posting-Date|X-Trace|X-Complaints-To|Xref|Path):/
 +    ' > $2
-diff -Nur suck-4.3.2.orig/suck_config.h suck-4.3.2/suck_config.h
---- suck-4.3.2.orig/suck_config.h	Sun Mar 23 16:35:53 2003
-+++ suck-4.3.2/suck_config.h	Mon Mar 31 22:30:30 2003
+--- suck-4.3.4/suck_config.h.orig	2018-08-01 15:54:24.000000000 +0200
++++ suck-4.3.4/suck_config.h	2019-09-29 08:53:24.781990082 +0200
 @@ -69,7 +69,7 @@
  
  /* FULL PATH of error log used if -e option specifed to any of the programs */
@@ -520,32 +515,23 @@ diff -Nur suck-4.3.2.orig/suck_config.h suck-4.3.2/suck_config.h
  
  /* FULL PATH of status messages log if -s option specified to any of the programs */
  /* can be overridden at the command line with -S option */
-@@ -95,8 +95,8 @@
+@@ -95,7 +95,7 @@
  #define N_LMOVE_CONFIG  "lmove-config"          /* config file for lmove */
  #define N_XOVER         "suckxover"             /* parameter file for which articles NOT to download via xover */
  #define N_NODOWNLOAD    "sucknodownload"        /* file name for message-ids that I never download */
--#define N_PHRASES "/usr/local/lib/suck.phrases"	/* default location for phrase file */
--#define HISTORY_FILE "/usr/news/db/history"     /* default location for history file */
-+#define N_PHRASES "/usr/lib/suck.phrases"	/* default location for phrase file */
-+#define HISTORY_FILE "/var/lib/news/history"	/* default location for history file */
+-#define N_PHRASES "/etc/suck/phrases"            /* default location for phrase file */
++#define N_PHRASES "/etc/news/suck/phrases"            /* default location for phrase file */
+ #define HISTORY_FILE "/var/lib/news/history"     /* default location for history file */
  
  /* TEMP FILES created */
- #define N_NEWRC "suck.newrc"
-@@ -111,7 +111,7 @@
+@@ -111,8 +111,8 @@
  #define N_OLD_OLDRC    "sucknewsrc.old"
  
  /* Various DIRECTORY PATHS, these can be overriden from command line */
 -#define N_TMPDIR "."		/* location of Temp Files */
+-#define N_DATADIR "/etc/suck"		/* location of Data Files */
 +#define N_TMPDIR "/tmp"		/* location of Temp Files */
- #define N_DATADIR "."		/* location of Data Files */
++#define N_DATADIR "/etc/news/suck"		/* location of Data Files */
  #define N_MSGDIR "./Msgs"	/*location of articles produced by suck, if multifile option selected */
  
-@@ -128,7 +128,7 @@
- #define RPOST_FAIL_EXT ".fail"
- 
- /* RNEWS program called by lpost */
--#define RNEWS "/usr/lib/news/rnews"
-+#define RNEWS "/usr/bin/rnews"
- 
- /* character used as a comment in sucknewsrc */
- #define SUCKNEWSRC_COMMENT_CHAR '#'
+ /* Argument substition strings for rpost */

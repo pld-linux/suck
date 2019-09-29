@@ -1,14 +1,5 @@
 --- suck-4.3.1/lpost.c.orig	Sat Jul 25 02:07:44 1998
 +++ suck-4.3.1/lpost.c	Sun Jan  5 13:34:16 2003
-@@ -17,7 +17,7 @@
- 		verbose=1;
- 	}
- 
--	while(gets(line) != NULL && retval == 0) {
-+	while(fgets(line,1024,stdin) != NULL && retval == 0) {
-   		len=strlen(line);
- 		if (pfp == NULL) {
- 			if (verbose != 0) {
 @@ -29,7 +29,7 @@
  			perror("Error: cannot open rnews: ");
  			retval = -1;
@@ -18,11 +9,3 @@
  			/* end of article */
  			if (verbose != 0) {
  				printf("end of article %d\n",count);
-@@ -41,7 +41,6 @@
- 		}
- 		else {
- 			(void) fputs(line, pfp);
--			(void) putc('\n', pfp);
- 		}
- 	} /* end while */
- 	exit(retval);

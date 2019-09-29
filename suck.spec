@@ -2,23 +2,23 @@
 Summary:	suck receives/sends news via NNTP
 Summary(pl.UTF-8):	suck odbiera i wysyła newsy przez NNTP
 Name:		suck
-Version:	4.3.2
-Release:	6
+Version:	4.3.4
+Release:	1
 License:	Public Domain
 Group:		Networking/News
-Source0:	ftp://sunsite.unc.edu/pub/Linux/system/news/transport/%{name}-%{version}.tar.gz
-# Source0-md5:	b4de28e7f256ec3c2c388b2c984f30bf
+#Source0Download: https://github.com/lazarus-pkgs/suck/releases
+Source0:	https://github.com/lazarus-pkgs/suck/archive/%{version}/%{name}-%{version}.tar.gz
+# Source0-md5:	b216f248f90bd1d93b61bebfe8b78cb4
 Source1:	%{name}.logrotate
 Source2:	%{name}-get-news.sh
 Source3:	%{name}-get-news-etc-example
 Patch0:		%{name}-PLD.patch
-Patch1:		%{name}-DESTDIR.patch
-Patch2:		%{name}-perl-5.6.patch
-Patch3:		%{name}-gets.patch
-# http://www.bacza.net/files/suck-4.3.2-ipv6.patch
-Patch4:		%{name}-ipv6.patch
-URL:		http://www.sucknews.org/index.html
-BuildRequires:	autoconf
+Patch1:		%{name}-perl-5.6.patch
+Patch2:		%{name}-gets.patch
+# additional IPv6 features from older patch: http://www.bacza.net/files/suck-4.3.2-ipv6.patch
+Patch3:		%{name}-ipv6.patch
+URL:		https://github.com/lazarus-pkgs/suck
+BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 BuildRequires:	inn-devel >= 2.0
 BuildRequires:	openssl-devel >= 0.9.7d
@@ -55,21 +55,15 @@ zainstalowaniu tego pakietu!
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch4 -p1
 
 %build
 %{__aclocal}
 %{__autoconf}
-CPPFLAGS="-D_GNU_SOURCE"
+%{__autoheader}
+CPPFLAGS="%{rpmcppflags} -D_GNU_SOURCE"
 %configure
 
-# workaround for stupid inn 2.3 headers
-cat >> config.h <<EOF
-#define BOOL int
-#define OFFSET_T off_t
-EOF
-
-%{__make} \
+%{__make} -j1 \
 	PERL_LIB="-lperl -lm -lcrypt -lpthread"
 
 %install
@@ -115,22 +109,36 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc  CHANGELOG CONTENTS README README.Gui README.Xover perl
-%attr(755,root,root) %{_bindir}/*
+%attr(755,root,root) %{_bindir}/get.news.inn
+%attr(755,root,root) %{_bindir}/lmove
+%attr(755,root,root) %{_bindir}/lpost
+%attr(755,root,root) %{_bindir}/rpost
+%attr(755,root,root) %{_bindir}/suck
+%attr(755,root,root) %{_bindir}/suck-get-news.sh
+%attr(755,root,root) %{_bindir}/testhost
 
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/logrotate.d/suck
 %dir %{_localstatedir}
 %attr(750,root,root) %config(noreplace) %{_localstatedir}/get.news.inn
 %attr(750,root,root) %config(noreplace) %{_localstatedir}/get.news.generic
+%attr(750,root,root) %config(noreplace) %{_localstatedir}/perl_kill.pl
+%attr(750,root,root) %config(noreplace) %{_localstatedir}/perl_xover.pl
+%attr(750,root,root) %config(noreplace) %{_localstatedir}/post_filter.pl
 %attr(750,root,root) %config(noreplace) %{_localstatedir}/put.news
+%attr(750,root,root) %config(noreplace) %{_localstatedir}/put.news.pl
 %attr(750,root,root) %config(noreplace) %{_localstatedir}/put.news.sm
-%attr(750,root,root) %config(noreplace) %{_localstatedir}/*.pl
+%attr(750,root,root) %config(noreplace) %{_localstatedir}/put.news.sm.pl
 %attr(640,root,root) %config(noreplace) %{_localstatedir}/sucknewsrc
 %attr(640,root,root) %config(noreplace) %{_localstatedir}/active-ignore
 %dir %{_sysconfdir}/news/suck
-%attr(640,root,root) %config(noreplace) %{_sysconfdir}/news/suck/*
-%{_mandir}/man1/*
+%attr(640,root,root) %config(noreplace) %{_sysconfdir}/news/suck/news.mimuw.edu.pl-example
+%{_mandir}/man1/lmove.1*
+%{_mandir}/man1/lpost.1*
+%{_mandir}/man1/rpost.1*
+%{_mandir}/man1/suck.1*
+%{_mandir}/man1/testhost.1*
 
-%attr(640,root,root) %ghost %{_localstatedir}/suck.killlog*
-%attr(640,root,root) %ghost /var/log/*
+%attr(640,root,root) %ghost %{_localstatedir}/suck.killlog
+%attr(640,root,root) %ghost /var/log/suck.errlog
 
 %{_examplesdir}/%{name}-%{version}
