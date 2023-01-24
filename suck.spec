@@ -2,7 +2,7 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl.UTF-8):	suck odbiera i wysyła newsy przez NNTP
 Name:		suck
 Version:	4.3.4
-Release:	2
+Release:	3
 License:	Public Domain
 Group:		Networking/News
 #Source0Download: https://github.com/lazarus-pkgs/suck/releases
@@ -16,6 +16,8 @@ Patch1:		%{name}-perl-5.6.patch
 Patch2:		%{name}-gets.patch
 # additional IPv6 features from older patch: http://www.bacza.net/files/suck-4.3.2-ipv6.patch
 Patch3:		%{name}-ipv6.patch
+# temporary workaround for messed headers in inn 2.7.0 (fixed on 2.8 branch)
+Patch4:		%{name}-inn.patch
 URL:		https://github.com/lazarus-pkgs/suck
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
@@ -54,6 +56,7 @@ zainstalowaniu tego pakietu!
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 %build
 %{__aclocal}

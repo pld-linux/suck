@@ -1,0 +1,10 @@
+--- suck-4.3.4/chkhistory_db.c.orig	2018-08-01 15:54:24.000000000 +0200
++++ suck-4.3.4/chkhistory_db.c	2023-01-24 20:41:32.371231375 +0100
+@@ -81,6 +81,7 @@ static DBM *db = NULL;	/* I know this is
+ #endif
+ #ifdef USE_INN23
+ #include <sys/types.h>
++#include <inn/system.h>
+ #include <inn/libinn.h>
+ #include <inn/dbz.h>
+ #define close_history() dbzclose()
