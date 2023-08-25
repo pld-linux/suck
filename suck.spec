@@ -2,10 +2,10 @@ Summary:	suck receives/sends news via NNTP
 Summary(pl.UTF-8):	suck odbiera i wysyła newsy przez NNTP
 Name:		suck
 Version:	4.3.4
-Release:	3
+Release:	4
 License:	Public Domain
 Group:		Networking/News
-#Source0Download: https://github.com/lazarus-pkgs/suck/releases
+#Source0Download: https://github.com/lazarus-pkgs/suck/tags
 Source0:	https://github.com/lazarus-pkgs/suck/archive/%{version}/%{name}-%{version}.tar.gz
 # Source0-md5:	b216f248f90bd1d93b61bebfe8b78cb4
 Source1:	%{name}.logrotate
