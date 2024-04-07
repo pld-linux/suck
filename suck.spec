@@ -1,13 +1,13 @@
 Summary:	suck receives/sends news via NNTP
 Summary(pl.UTF-8):	suck odbiera i wysyła newsy przez NNTP
 Name:		suck
-Version:	4.3.4
-Release:	4
+Version:	4.3.5
+Release:	1
 License:	Public Domain
 Group:		Networking/News
 #Source0Download: https://github.com/lazarus-pkgs/suck/tags
 Source0:	https://github.com/lazarus-pkgs/suck/archive/%{version}/%{name}-%{version}.tar.gz
-# Source0-md5:	b216f248f90bd1d93b61bebfe8b78cb4
+# Source0-md5:	ab13545ad364cb77959e71509638665e
 Source1:	%{name}.logrotate
 Source2:	%{name}-get-news.sh
 Source3:	%{name}-get-news-etc-example
@@ -63,7 +63,8 @@ zainstalowaniu tego pakietu!
 %{__autoconf}
 %{__autoheader}
 CPPFLAGS="%{rpmcppflags} -D_GNU_SOURCE"
-%configure
+%configure \
+	--with-inn-lib=%{_libdir}
 
 %{__make} -j1 \
 	PERL_LIB="-lperl -lm -lcrypt -lpthread"
